@@ -7,16 +7,91 @@
 // 
 // To start, we'll use Postgres, and this single 
 // file will contain the entire schema. As the 
-// number of tables and relationships increases 
+// number of tables and relationships increases, 
 // we may break this out into different files 
-// based on either functionality or relationships
+// based on either functionality or relationships.
+
+// TODO: 
+//  * think about indexes 
+//      * users 
+//          * email
+// 
+
+// Table TODOs: 
+// Table user_roles {
+
+// }
+
+// Table roles {
+
+// }
+
+// Table brands {
+
+// }
+
+// Table manufacturers {
+
+// }
+
+// Table fibers {
+
+// }
 
 Table users {
-  id integer
-  email email
-  first_name text 
-  last_name text 
-  display_name text 
-  created_at timestamp
-  updated_at timestamp
+  id integer [pk, increment]
+  email email [unique, not null]
+  first_name text [not null]
+  last_name text [not null]
+  display_name text [default: "conact(first_name, ' ', last_name)"]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table yarn {
+  id integer [pk, increment]
+  // will join to brands table 
+  brand_id integer [not null] 
+  // will join to manufacturers table 
+  manufacturer_id integer [not null]
+  // will join to materials table 
+  material_id integer [not null]
+  color color
+  // different for each brand, probably just text 
+  lot_number text 
+  length_in_meters float [not null] 
+  // either 
+  weight_in_grams float [not null] 
+  // will join to the thickness lookup table  
+  thickness_id integer [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table materials {
+  id integer [pk, increment]
+  name text [not null]
+  description text [not null]
+  // will join to the fibers table 
+  fiber fiber_id [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+// measures the circumference of the yarn 
+// 0 = lace weight 
+// 1 = fingering 
+// 2 = sport 
+// 3 = double-knitted 
+// 4 = worsted 
+// 5 = bulky 
+// 6 = extra bulky 
+// 7 = jumbo
+Table thicknesses {
+  id integer [pk, increment]
+  name text [not null]
+  description text [not null]
+  circumference float [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
 }
