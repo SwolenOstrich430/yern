@@ -1,0 +1,22 @@
+// Docs: https://dbml.dbdiagram.io/docs
+// Schema file that you can plug into the above 
+// website for better viewing. 
+// 
+// This will define the schema for the beginning 
+// db for this project. 
+// 
+// To start, we'll use Postgres, and this single 
+// file will contain the entire schema. As the 
+// number of tables and relationships increases 
+// we may break this out into different files 
+// based on either functionality or relationships
+
+Table users {
+  id integer
+  email email
+  first_name text 
+  last_name text 
+  display_name text 
+  created_at timestamp
+  updated_at timestamp
+}
