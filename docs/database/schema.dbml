@@ -19,7 +19,7 @@
 //  * think about indexes 
 //      * users 
 //          * email
-// 
+// * think about many-to-many table for fiber_blends
 
 // Table TODOs: 
 
@@ -34,9 +34,12 @@ Table users {
 }
 
 Table user_roles {
-    user_id bigint [not null, ref: > users.id] // many-to-one relationship
-    role_id bigint [not null, ref: > roles.id]
+    user_id bigint [not null] 
+    role_id bigint [not null]
 }
+ref: user_roles.user_id > users.id
+ref: user_roles.role_id > roles.id
+
 
 Table roles {
     id bigint [pk, increment]
@@ -48,11 +51,11 @@ Table roles {
 Table yarn {
   id bigint [pk, increment]
   // will join to brands table 
-  brand_id integer [not null, ref: > brands.id] 
+  brand_id integer [not null] 
   // will join to manufacturers table 
-  manufacturer_id integer [not null, ref: > manufacturers.id]
+  manufacturer_id integer [not null]
   // will join to materials table 
-  material_id integer [not null, ref: > materials.id]
+  material_id integer [not null]
   color color
   // different for each brand, probably just text 
   lot_number text 
@@ -64,6 +67,11 @@ Table yarn {
   created_at timestamp [default: "now()"]
   updated_at timestamp [default: "now()"]
 }
+ref: yarn.brand_id > brands.id
+ref: yarn.manufacturer_id > manufacturers.id
+ref: yarn.material_id > materials.id
+ref: yarn.thickness_id > thicknesses.id
+
 
 Table materials {
   id bigint [pk, increment]
@@ -71,10 +79,11 @@ Table materials {
   description text [not null]
   // may need to be an array of fibers 
   // or join to a different table (maybe fiber_blends/blends)
-  fiber_id  [not null, ref: > fibers.id]
+  fiber_id  [not null]
   created_at timestamp [default: "now()"]
   updated_at timestamp [default: "now()"]
 }
+ref: materials.fiber_id > fibers.id
 
 // measures the circumference of the yarn 
 // 0 = lace weight 
@@ -87,6 +96,7 @@ Table materials {
 // 7 = jumbo
 Table thicknesses {
   id bigint [pk, increment]
+  // the numbers and descriptions above 
   weight_number integer [not null]
   name text [not null]
   description text [not null]
