@@ -31,7 +31,7 @@
 /////////////////////////////////////////////////
 Table users {
   id bigint [pk, increment]
-  email email [unique, not null]
+  email text [unique, not null]
   first_name text [not null]
   last_name text [not null]
   display_name text [default: "concat(first_name, ' ', last_name)"]
@@ -91,7 +91,7 @@ Table materials {
   description text [not null]
   // may need to be an array of fibers 
   // or join to a different table (maybe fiber_blends/blends)
-  fiber_id  [not null]
+  fiber_id bigint [not null]
   created_at timestamp [default: "now()"]
   updated_at timestamp [default: "now()"]
 }
