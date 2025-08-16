@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # TODO: 
-#   check if npm is installed before using 
+#   * check if npm is installed before using 
+#   * create the schema file first and then append to it with each sub-file
 
 # setting up vars 
 package_name='@dbml/cli'
