@@ -1,0 +1,144 @@
+// Docs: https://dbml.dbdiagram.io/docs
+// Schema file that you can plug into the above 
+// website for better viewing. 
+// 
+// This will define the schema for the beginning 
+// db for this project. 
+// 
+// To start, we'll use Postgres, and this single 
+// file will contain the entire schema. As the 
+// number of tables and relationships increases, 
+// we may break this out into different files 
+// based on either functionality or relationships.
+
+// There will be a script that can run with each 
+// commit to any of the files to build a full schema 
+// and commit automatically to main once the PR goes in. 
+
+// TODO: 
+//  * think about indexes 
+//      * users 
+//          * email
+// * think about many-to-many table for fiber_blends
+
+// Table TODOs: 
+
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+///////////Users and Related Tables//////////////
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+Table users {
+  id bigint [pk, increment]
+  email text [unique, not null]
+  first_name text [not null]
+  last_name text [not null]
+  display_name text [default: "concat(first_name, ' ', last_name)"]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table user_roles {
+    user_id bigint [not null] 
+    role_id bigint [not null]
+}
+ref: user_roles.user_id > users.id
+ref: user_roles.role_id > roles.id
+
+
+Table roles {
+    id bigint [pk, increment]
+    name text [unique, not null]
+    // human-readable id for the role. E.g., admin. 
+    identifier text [unique, not null]
+}
+
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+////////////Yarn and Related Tables//////////////
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+Table yarn {
+  id bigint [pk, increment]
+  // will join to brands table 
+  brand_id integer [not null] 
+  // will join to manufacturers table 
+  manufacturer_id integer [not null]
+  // will join to materials table 
+  material_id integer [not null]
+  color color
+  // different for each brand, probably just text 
+  lot_number text 
+  length_in_meters float [not null] 
+  // either 
+  weight_in_grams float [not null] 
+  // will join to the thickness lookup table  
+  thickness_id integer [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+ref: yarn.brand_id > brands.id
+ref: yarn.manufacturer_id > manufacturers.id
+ref: yarn.material_id > materials.id
+ref: yarn.thickness_id > thicknesses.id
+
+
+Table materials {
+  id bigint [pk, increment]
+  name text [not null]
+  description text [not null]
+  // may need to be an array of fibers 
+  // or join to a different table (maybe fiber_blends/blends)
+  fiber_id bigint [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+ref: materials.fiber_id > fibers.id
+
+// measures the circumference of the yarn 
+// 0 = lace weight 
+// 1 = fingering 
+// 2 = sport 
+// 3 = double-knitted 
+// 4 = worsted 
+// 5 = bulky 
+// 6 = extra bulky 
+// 7 = jumbo
+Table thicknesses {
+  id bigint [pk, increment]
+  // the numbers and descriptions above 
+  weight_number integer [not null]
+  name text [not null]
+  description text [not null]
+  circumference float [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table brands {
+  id bigint [pk, increment]
+  name text [not null]
+  identifier text [not null]
+  description text [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table manufacturers {
+  id bigint [pk, increment]
+  name text [not null]
+  identifier text [not null]
+  description text [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
+
+Table fibers {
+  id bigint [pk, increment]
+  name text [not null]
+  identifier text [not null]
+  created_at timestamp [default: "now()"]
+  updated_at timestamp [default: "now()"]
+}
