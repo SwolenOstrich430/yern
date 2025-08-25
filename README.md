@@ -27,6 +27,27 @@ brew install postgres
 
 #### Login
 
+### Stitch Counter 
+
+#### Design 
+I have this many stitches for a project. 
+
+### Row Counter 
+#### Purpose 
+Keep track of which line in a piece or section of a piece that you're working on. 
+
+#### Design 
+##### Overview 
+* You press '-' or '+' and that increases the current row that you're on.
+* Counts which row that you're on in the current section of your design.
+* Would be nice to have it for each panel OR the entire garment. Most apps offer this as a premium feature. 
+
+***** Design 
+* Is a table connected to garments/garment_panels.
+* 
+### Timer 
+
+## DB Objects
 ### Projects 
 A project is one or more patterns that a user is working on. A project has: 
 
@@ -55,23 +76,3 @@ Patterns have:
 * name
 * Types of panels can be introduced later. E.g., sleeve, torso, cuff, etc. 
 
-
-### Stitch Counter 
-
-#### Design 
-I have this many stitches for a project. 
-
-### Row Counter 
-#### Purpose 
-Keep track of which line in a piece or section of a piece that you're working on. 
-
-#### Design 
-##### Overview 
-* You press '-' or '+' and that increases the current row that you're on.
-* Counts which row that you're on in the current section of your design.
-* Would be nice to have it for each panel OR the entire garment. Most apps offer this as a premium feature. 
-
-***** Design 
-* Is a table connected to garments/garment_panels.
-* 
-### Timer 
