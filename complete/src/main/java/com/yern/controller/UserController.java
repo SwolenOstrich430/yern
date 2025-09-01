@@ -1,14 +1,16 @@
 package com.yern.controller;
 
+import com.yern.dto.user.UserGetDto;
+import com.yern.dto.user.UserPostDto;
 import com.yern.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.yern.model.User;
+import com.yern.model.user.User;
 
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
 
     @Autowired
@@ -24,8 +26,5 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
-    }
+
 }
