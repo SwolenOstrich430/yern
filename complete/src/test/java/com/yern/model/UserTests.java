@@ -3,10 +3,9 @@ package com.yern.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import com.yern.model.User;
+import com.yern.model.user.User;
 
-import java.time.Instant;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,15 +20,15 @@ public class UserTests {
                 "Peter",
                 "Connelly",
                 "pconnelly898@gmail.com",
-                Instant.now(),
-                Instant.now()
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
     }
 
     @Test
     public void setUpdatedAtOptionalWithValue() {
-        Instant currTime = Instant.now();
-        Instant originalUpdatedAt = user.getUpdatedAt();
+        LocalDateTime currTime = LocalDateTime.now();
+        LocalDateTime originalUpdatedAt = user.getUpdatedAt();
 
         assertNotEquals(currTime, originalUpdatedAt);
 
@@ -39,7 +38,7 @@ public class UserTests {
 
     @Test
     public void setUpdatedAtOptionalWithNullValue() {
-        Instant originalUpdatedAt = user.getUpdatedAt();
+        LocalDateTime originalUpdatedAt = user.getUpdatedAt();
 
         user.setUpdatedAt(Optional.empty());
         assertTrue(

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="rest-service-complete" name="rest-service-complete" framework="JPA" ormUnit="rest-service-complete:rest-service-complete" defaultDataSourceId="d85d1823-28d5-4d49-b92c-59f974fe34d9" />
+    </persistence-units>
+  </component>
+</project>
