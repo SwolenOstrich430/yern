@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -27,6 +28,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Value("${security.auth.oauth2.token_prefix}")
     private String tokenPrefix;
+
+    @Value("${api.endpoints.auth.base-uri}")
+    private List<String> uriToIgnore;
 
     @Autowired
     private JwtService jwtService;
@@ -80,7 +84,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         final String jwtToken = authHeader.substring(tokenPrefix.length());
-        return Optional.of(jwtToken);
+        return Optional.of(jwtToken.strip());
     }
 
     private Optional<UserDetails> extractUserDetails(String token) throws AccessDeniedException {
@@ -97,5 +101,11 @@ public class JwtFilter extends OncePerRequestFilter {
         return Optional.of(
             userDetailsService.loadUserByUsername(username)
         );
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return uriToIgnore.stream().anyMatch(path::startsWith);
     }
 }

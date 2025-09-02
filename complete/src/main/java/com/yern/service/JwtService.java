@@ -4,6 +4,8 @@ import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -21,6 +23,13 @@ public class JwtService {
     @Value("${security.auth.signing_key}")
     private String secretKey;
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuerUri;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audiences}")
+    private List<String> allowedAudiences;
+
+    private final String INVALID_TOKEN_ERROR = "Invalid Token";
     private final int MINUTES = 60;
 
     public String generateToken(String email) {
@@ -28,6 +37,8 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(email)
+                .issuer(issuerUri)
+                .claim("aud", allowedAudiences)
                 .signWith(getSecretKey())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(MINUTES, ChronoUnit.MINUTES)))
@@ -39,9 +50,32 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) throws AccessDeniedException {
+    public String extractIssuer(String token) throws AccessDeniedException {
+        Claims claims = getTokenBody(token);
+        return claims.getIssuer();
+    }
+
+    public Set<String> extractAudience(String token) throws AccessDeniedException {
+        Claims claims = getTokenBody(token);
+        return claims.getAudience();
+    }
+
+    public void validateToken(String token, UserDetails userDetails) throws AccessDeniedException {
         final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        if (!username.equals(userDetails.getUsername()) || isTokenExpired(token)) {
+            throw new AccessDeniedException(INVALID_TOKEN_ERROR);
+        }
+
+        final String issuer = extractIssuer(token);
+        if (!issuer.equals(issuerUri)) {
+            throw new AccessDeniedException(INVALID_TOKEN_ERROR);
+        }
+
+        final Set<String> audiences = extractAudience(token);
+        audiences.retainAll(allowedAudiences);
+        if (audiences.isEmpty()) {
+            throw new AccessDeniedException(INVALID_TOKEN_ERROR);
+        }
     }
 
     public Claims getTokenBody(String token) throws AccessDeniedException {

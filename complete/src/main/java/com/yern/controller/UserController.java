@@ -10,7 +10,7 @@ import com.yern.model.user.User;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("${api.users-endpoint}")
 public class UserController {
 
     @Autowired

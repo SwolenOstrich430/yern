@@ -1,15 +1,11 @@
 package com.yern.config;
 
 import com.yern.service.UserDetailsServiceImpl;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,8 +14,13 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 
 @Configuration
@@ -29,6 +30,12 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authConfiguration;
     private final JwtFilter jwtFilter;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuerUri;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audiences}")
+    private List<String> allowedAudiences;
 
     public SecurityConfig(
         UserDetailsServiceImpl userDetailsService,
@@ -61,8 +68,10 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager);
-//                .oauth2ResourceServer(
-//                        c -> c.opaqueToken(Customizer.withDefaults())
+//                .oauth2ResourceServer(oauth2 -> oauth2
+//                    .jwt(jwt -> jwt
+//                        .decoder(jwtDecoder())
+//                    )
 //                );
 
 
@@ -81,4 +90,24 @@ public class SecurityConfig {
 
         return authenticationManagerBuilder.build();
     }
+
+//    @Bean
+//    public JwtDecoder jwtDecoder() {
+//        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuerUri)
+//                .jwsAlgorithm(RS512).build();
+//
+//        OAuth2TokenValidator<Jwt> audienceValidator = audienceValidator();
+//        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+//        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+//
+//        jwtDecoder.setJwtValidator(withAudience);
+//        return jwtDecoder;
+//    }
+//
+//    OAuth2TokenValidator<Jwt> audienceValidator() {
+//        return new JwtClaimValidator<List<String>>(
+//            AUD,
+//            aud -> aud.stream().anyMatch(allowedAudiences::contains)
+//        );
+//    }
 }
