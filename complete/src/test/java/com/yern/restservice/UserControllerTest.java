@@ -2,11 +2,11 @@ package com.yern.restservice;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.yern.controller.UserController;
+import com.yern.controller.user.UserController;
 import com.yern.model.LocalDateTimeDeserializer;
 import com.yern.model.user.User;
-import com.yern.repository.UserRepository;
-import com.yern.service.UserService;
+import com.yern.repository.user.UserRepository;
+import com.yern.service.user.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

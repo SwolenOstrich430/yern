@@ -1,17 +1,14 @@
-package com.yern.controller;
+package com.yern.controller.security;
 
 import com.yern.dto.authentication.LoginRequest;
 import com.yern.dto.authentication.LoginResponse;
 import com.yern.dto.user.UserPostDto;
-import com.yern.service.AuthenticationService;
-import com.yern.service.JwtService;
+import com.yern.service.security.authentication.AuthenticationService;
+import com.yern.service.security.authentication.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 
@@ -47,12 +44,23 @@ public class AuthenticationController {
             )
         );
 
-        String token = jwtService.generateToken(request.email());
-        return ResponseEntity.ok(new LoginResponse(request.email(), token));
+        return ResponseEntity.ok(
+            authenticationService.loginUser(request.email())
+        );
     }
 
     @PostMapping("/api/auth/register")
     public void registerUser(@RequestBody UserPostDto user) {
         authenticationService.registerUser(user);
+    }
+
+    @GetMapping("api/auth/oauth2/start")
+    public String grantCode(
+        @RequestParam("code") String code,
+        @RequestParam("scope") String scope,
+        @RequestParam("authuser") String authUser,
+        @RequestParam("prompt") String prompt
+    ) {
+        return authenticationService.processGrantCode(code);
     }
 }

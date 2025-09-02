@@ -1,10 +1,10 @@
-package com.yern.service;
+package com.yern.service.security.authentication;
 
 import com.yern.exceptions.NotFoundException;
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
-import com.yern.repository.UserAuthenticationRepository;
-import com.yern.repository.UserRepository;
+import com.yern.repository.user.UserAuthenticationRepository;
+import com.yern.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

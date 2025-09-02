@@ -1,12 +1,14 @@
-package com.yern.controller;
+package com.yern.controller.user;
 
-import com.yern.dto.user.UserGetDto;
-import com.yern.dto.user.UserPostDto;
-import com.yern.service.UserService;
+import com.yern.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.yern.model.user.User;
+
+import java.nio.file.AccessDeniedException;
 
 
 @RestController
@@ -26,5 +28,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) throws AccessDeniedException {
+        if (userDetails == null) {
+            throw new AccessDeniedException("No user found,");
+        }
 
+        return getUserByEmail(userDetails.getUsername());
+    }
 }

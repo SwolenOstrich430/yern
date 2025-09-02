@@ -1,6 +1,5 @@
-package com.yern.repository;
+package com.yern.repository.user;
 
-import com.yern.dto.authentication.UserAuthenticationPostDto;
 import com.yern.model.user.UserAuthentication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

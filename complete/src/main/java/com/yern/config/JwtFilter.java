@@ -1,7 +1,7 @@
 package com.yern.config;
 
-import com.yern.service.JwtService;
-import com.yern.service.UserDetailsServiceImpl;
+import com.yern.service.security.authentication.JwtService;
+import com.yern.service.security.authentication.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

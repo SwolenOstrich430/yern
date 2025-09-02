@@ -1,18 +1,13 @@
-package com.yern.service;
+package com.yern.service.user;
 
-import com.yern.dto.authentication.UserAuthenticationPostDto;
 import com.yern.dto.user.UserGetDto;
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
 import com.yern.mapper.UserMapper;
 import com.yern.model.user.User;
-import com.yern.model.user.UserAuthentication;
-import com.yern.repository.UserAuthenticationRepository;
-import com.yern.repository.UserRepository;
+import com.yern.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 public class UserService {

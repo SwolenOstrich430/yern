@@ -11,7 +11,7 @@ public class UserPostDto {
     private String email;
     private String username;
     private String password;
-     private String authenticationProviderIdentifier;
+    private String authenticationProviderIdentifier;
 
     public UserPostDto() {}
 }
