@@ -64,7 +64,7 @@ public class AuthenticationService {
 
     public LoginResponse loginUser(String email) {
         String token = jwtService.generateToken(email);
-        return new LoginResponse(token, email);
+        return new LoginResponse(email, token);
     }
 
     public LoginResponse processGrantCode(String provider, String code) throws NoSuchProviderException {

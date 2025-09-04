@@ -4,13 +4,16 @@ import com.yern.dto.authentication.LoginRequest;
 import com.yern.dto.authentication.LoginResponse;
 import com.yern.service.security.authentication.AuthenticationService;
 import com.yern.service.security.authentication.JwtService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.io.IOException;
 import java.security.NoSuchProviderException;
 
 
@@ -58,16 +61,18 @@ public class AuthenticationController {
 
     // Starts the OAuth flow once a user hits "sign-in with provider
     @GetMapping("api/auth/oauth2/{provider}/start")
-    public String startOauthFlow(
+    public void startOauthFlow(
         @PathVariable String provider,
-        @RequestParam String email
-    ) throws NoSuchProviderException {
+        @RequestParam String email,
+        HttpServletResponse response
+    ) throws NoSuchProviderException, IOException {
         String redirectUri = authenticationService.getOauthInitiateUri(
             provider,
             email
         );
 
-        return (redirectPrefix + redirectUri);
+        response.setStatus(HttpStatus.MOVED_PERMANENTLY.value());
+        response.sendRedirect(redirectUri);
     }
 
     // Callback used once the initial auth/oauth2/provider/start has been hit
