@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -38,9 +39,14 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    public JwtFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
+    public JwtFilter(
+        JwtService jwtService,
+        UserDetailsServiceImpl userDetailsService,
+        @Value("${api.endpoints.auth.base-uri}") List<String> uriToIgnore
+    ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.uriToIgnore = uriToIgnore;
     }
 
     @Override
@@ -49,14 +55,14 @@ public class JwtFilter extends OncePerRequestFilter {
         HttpServletResponse response,
         FilterChain filterChain
     ) throws IOException, ServletException {
-        Optional<String> token = extractToken(request);
+        Optional<String> token = jwtService.extractToken(request);
         if (token.isEmpty() || token.get().isEmpty()) {
             throw new AccessDeniedException("Token is empty.");
         }
 
         Optional<UserDetails> userDetails = extractUserDetails(token.get());
         if (userDetails.isEmpty()) {
-            throw new AccessDeniedException("No user found,");
+            throw new AccessDeniedException("No user found.");
         }
 
         jwtService.validateToken(token.get(), userDetails.get());
@@ -66,28 +72,13 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     protected void setSecurityContextAuthentication(HttpServletRequest request, UserDetails userDetails) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            userDetails,
-            null,
-            userDetails.getAuthorities()
-        );
+        UsernamePasswordAuthenticationToken authToken = getAuthentication(userDetails);
 
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        authToken.setDetails(getWebAuthenticationDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
-    private Optional<String> extractToken(HttpServletRequest request) {
-        String authHeader = request.getHeader(AUTH_HEADER);
-
-        if (authHeader == null || !authHeader.startsWith(tokenPrefix)) {
-            return Optional.empty();
-        }
-
-        final String jwtToken = authHeader.substring(tokenPrefix.length());
-        return Optional.of(jwtToken.strip());
-    }
-
-    private Optional<UserDetails> extractUserDetails(String token) throws AccessDeniedException {
+    public Optional<UserDetails> extractUserDetails(String token) throws AccessDeniedException {
         String username = jwtService.extractUsername(token);
         if (username == null || username.isEmpty()) {
             return Optional.empty();
@@ -107,5 +98,17 @@ public class JwtFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         return uriToIgnore.stream().anyMatch(path::startsWith);
+    }
+
+    public UsernamePasswordAuthenticationToken getAuthentication(UserDetails userDetails) {
+       return new UsernamePasswordAuthenticationToken(
+           userDetails,
+           null,
+           userDetails.getAuthorities()
+       );
+    }
+
+    public WebAuthenticationDetails getWebAuthenticationDetails(HttpServletRequest request) {
+       return new WebAuthenticationDetailsSource().buildDetails(request);
     }
 }

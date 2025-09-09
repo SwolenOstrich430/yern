@@ -18,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-
+// TODO: move the instance variables to config object or think about creating a builder/factory
 @Service("oauth2_google")
 public final class GoogleOauth2Service implements Oauth2Service {
     public static String IDENTIFIER = "google";
@@ -35,77 +36,91 @@ public final class GoogleOauth2Service implements Oauth2Service {
     @Autowired
     private UserRepository userRepository;
 
-    // TODO: move this into a config class
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
-
-    @Value("${api.external.oauth2.google.config.endpoints.initiate-uri}")
     private String initiateUri;
-
-    @Value("${api.endpoints.auth.oauth2.redirect-uri}")
     private String redirectUri;
-
-    @Value("${spring.security.oauth2.client.registration.google.scope}")
     private Set<String> scopes;
-
-    @Value("${spring.security.oauth2.client.registration.google.authorization-grant-type}")
     private String grantType;
-
-    @Value("${api.external.oauth2.google.config.access-type}")
     private String accessType;
-
-    @Value("${api.external.oauth2.google.config.endpoints.token-uri}")
     private String tokenUri;
-
-    @Value("${api.external.oauth2.google.config.endpoints.user-uri}")
     private String userUri;
-
-    @Value("${api.external.oauth2.google.config.response-type}")
     private String responseType;
+    private String baseUrl;
 
+    // TODO: move this into a config class
+    public GoogleOauth2Service(
+        UserRepository userRepository,
+        @Value("${spring.security.oauth2.client.registration.google.client-id}") String clientId,
+        @Value("${spring.security.oauth2.client.registration.google.client-secret}") String clientSecret,
+        @Value("${api.external.oauth2.google.config.endpoints.initiate-uri}") String initiateUri,
+        @Value("${api.endpoints.auth.oauth2.redirect-uri}") String redirectUri,
+        @Value("${spring.security.oauth2.client.registration.google.scope}") Set<String> scopes,
+        @Value("${spring.security.oauth2.client.registration.google.authorization-grant-type}") String grantType,
+        @Value("${api.external.oauth2.google.config.access-type}") String accessType,
+        @Value("${api.external.oauth2.google.config.endpoints.token-uri}") String tokenUri,
+        @Value("${api.external.oauth2.google.config.endpoints.user-uri}") String userUri,
+        @Value("${api.external.oauth2.google.config.response-type}") String responseType,
+        @Value("${api.base-url}") String baseUrl
+    ) {
+        this.userRepository = userRepository;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.initiateUri = initiateUri;
+        this.redirectUri = redirectUri;
+        this.scopes = scopes;
+        this.grantType = grantType;
+        this.accessType = accessType;
+        this.tokenUri = tokenUri;
+        this.userUri = userUri;
+        this.responseType = responseType;
+        this.baseUrl = baseUrl;
+    }
 
-    public String getOauthInitiateUri(String email) {
+    public GoogleOauth2Service() {}
+
+    public URI getOauthInitiateUri(String email) {
+        MultiValueMap<String, String> params = getOauthInitiateParams(email);
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(initiateUri).queryParams(params).build();
+        return uriComponents.toUri();
+    }
+
+    public MultiValueMap<String, String> getOauthInitiateParams(String email) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
         params.add("scope", getScopesQueryParam());
         params.add("access_type", accessType);
         params.add("client_id", clientId);
-        params.add("redirect_uri", "http://localhost:8080" + redirectUri);
+        params.add("redirect_uri", baseUrl + redirectUri);
         params.add("include_granted_scopes", "false");
         params.add("response_type", responseType);
         params.add("state", getSetState(email));
 
-        UriComponents uriComponents = UriComponentsBuilder.fromUriString(initiateUri).queryParams(params).build();
-        return uriComponents.toUri().toString();
+        return params;
     }
 
     public User processGrantCode(String code) {
         String accessToken = getAccessToken(code);
-
+        // TODO: add validation for accessToken and externalUser
         UserPostDto externalUser = getUserFromAccessToken(accessToken);
         Optional<User> user = userRepository.findByEmail(externalUser.getEmail());
 
         if(user.isEmpty()) {
+            // Per Google's docs, users should be redirected
+            // to go through registration of not yet logged in (others disagree?)
+            // may change this going forward
             throw new ResourceAccessException(
-                "User is not registered yet. Please go through normal registration first"
+                "User is not registered yet. Please go through normal registration first."
             );
         }
 
         return user.get();
     }
 
+    // TODO: add test cases
     public String getAccessToken(String code) {
         RestTemplate restTemplate = new RestTemplate();
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("code", code);
-        params.add("redirect_uri", "http://localhost:8080" + redirectUri);
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("grant_type", grantType);
+        MultiValueMap<String, String> params = getAccessTokenParams(code);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -116,9 +131,22 @@ public final class GoogleOauth2Service implements Oauth2Service {
         ResponseEntity<String> response = restTemplate.postForEntity(tokenUri, requestEntity, String.class, 1);
         JsonObject jsonObject = new Gson().fromJson(response.getBody(), JsonObject.class);
 
+        assert jsonObject != null;
         return jsonObject.get("access_token").toString().replace("\"", "");
     }
 
+    public MultiValueMap<String, String> getAccessTokenParams(String code) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("code", code);
+        params.add("redirect_uri", baseUrl + redirectUri);
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("grant_type", grantType);
+
+        return params;
+    }
+
+    // TODO: add test cases
     @Override
     public UserPostDto getUserFromAccessToken(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
@@ -144,18 +172,14 @@ public final class GoogleOauth2Service implements Oauth2Service {
         return user;
     }
 
-    private String getScopesQueryParam() {
+    public String getScopesQueryParam() {
         return scopes.stream()
                 .map(String::trim)
                 .collect(Collectors.joining(" "));
     }
 
-    private String urlEncode(String value) throws UnsupportedEncodingException {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
-    }
-
     // This should probably be a util method
-    private String getSetState(String email) {
+    public String getSetState(String email) {
         String state = getStateValue();
         String cacheKey = getStateCacheKey(email);
 

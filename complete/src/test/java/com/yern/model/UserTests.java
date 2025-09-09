@@ -23,6 +23,8 @@ public class UserTests {
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );
+
+        user.setId(123L);
     }
 
     @Test
@@ -37,13 +39,54 @@ public class UserTests {
     }
 
     @Test
-    public void setUpdatedAtOptionalWithNullValue() {
+    public void setUpdatedAtEmptyOptional() {
         LocalDateTime originalUpdatedAt = user.getUpdatedAt();
 
         user.setUpdatedAt(Optional.empty());
         assertTrue(
             originalUpdatedAt.isBefore(user.getUpdatedAt())
         );
+    }
+
+    @Test
+    public void equals_returnsTrue_whenSameObject() {
+        assertEquals(user, user);
+    }
+
+    @Test
+    public void equals_returnsFalse_whenObjectNotInstanceOfUserClass() {
+        assertNotEquals("", user);
+    }
+
+    @Test
+    public void equals_returnsTrue_whenIdsAreEqual() {
+        User otherUser = new User();
+        otherUser.setId(user.getId());
+
+        assertEquals(user, otherUser);
+    }
+
+    @Test
+    public void equals_returnsTrue_whenEmailsAreEqual() {
+        User otherUser = new User();
+        otherUser.setEmail(user.getEmail());
+
+        assertEquals(user, otherUser);
+    }
+
+    @Test
+    public void hashcode_returnsAHash_ofTheUsersIdHashCode() {
+        int hashCode =  user.hashCode();
+        assertEquals(hashCode, user.hashCode());
+
+        User otherUser = new User();
+        otherUser.setId(user.getId());
+
+        int otherHashCode = otherUser.hashCode();
+        assertEquals(otherHashCode, hashCode);
+
+        otherUser.setId(user.getId() + 1L);
+        assertNotEquals(otherUser.hashCode(), hashCode);
     }
 }
 

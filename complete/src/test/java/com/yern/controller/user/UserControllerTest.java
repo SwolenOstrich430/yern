@@ -1,12 +1,11 @@
-package com.yern.restservice;
+package com.yern.controller.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.yern.controller.user.UserController;
 import com.yern.model.LocalDateTimeDeserializer;
 import com.yern.model.user.User;
-import com.yern.repository.user.UserRepository;
 import com.yern.service.user.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +14,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.time.LocalDateTime;
@@ -30,9 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = {
-    UserController.class,
-    UserService.class,
-    UserRepository.class
+    UserController.class
 })
 @AutoConfigureMockMvc
 @EnableWebMvc
@@ -45,6 +46,9 @@ public class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
+    @Autowired
+    private WebApplicationContext context;
+
     @Value("${api.users-endpoint}")
     private String userEndpoint;
 
@@ -52,6 +56,13 @@ public class UserControllerTest {
         .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeDeserializer())
         .create();
 
+    @BeforeEach
+    public void setup() {
+        this.mockMvc = MockMvcBuilders
+                    .webAppContextSetup(context)
+                    .apply(SecurityMockMvcConfigurers.springSecurity())
+                    .build();
+    }
     // Method: Get User
     @Test
     @DisplayName(
@@ -69,13 +80,14 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint + "/" + user.getId())
+            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
             .accept("application/json")
         )
         .andExpect(status().isOk())
-                .andReturn();
+        .andReturn();
 
         assertTrue(
-                result.getResponse().getContentAsString().isEmpty()
+            result.getResponse().getContentAsString().isEmpty()
         );
     }
 
@@ -95,6 +107,7 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint + "/" + user.getId())
+                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
                 .accept("application/json")
                 .param("id", String.valueOf(user.getId()))
         )
@@ -118,7 +131,8 @@ public class UserControllerTest {
 	public void getUserByEmail_shouldThrow_whenNoEmailParamProvided() throws Exception {
 
         this.mockMvc.perform(
-                get(userEndpoint)
+            get(userEndpoint)
+            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
         )
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertNotNull(result.getResolvedException()))
@@ -135,17 +149,18 @@ public class UserControllerTest {
     public void getUserByEmail_shouldReturnUser_whenMatchingEmailFound() throws Exception {
         String email = "test@google.com";
         User user = new User(
-                "first",
-                "last",
-                email
+            "first",
+            "last",
+            email
         );
 
         when(userService.getUserByEmail(email)).thenReturn(user);
 
         MvcResult result = this.mockMvc.perform(
-                get(userEndpoint)
-                .accept("application/json")
-                .param("email", email)
+            get(userEndpoint)
+            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
+            .accept("application/json")
+            .param("email", email)
         )
         .andExpect(status().isOk())
         .andReturn();
@@ -169,6 +184,7 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint)
+            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
             .param("email", email)
         )
         .andExpect(status().isOk())

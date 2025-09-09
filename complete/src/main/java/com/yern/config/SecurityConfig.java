@@ -25,7 +25,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
-    private final AuthenticationConfiguration authConfiguration;
     private final JwtFilter jwtFilter;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
@@ -36,11 +35,9 @@ public class SecurityConfig {
 
     public SecurityConfig(
         UserDetailsServiceImpl userDetailsService,
-        AuthenticationConfiguration authConfiguration,
         JwtFilter jwtFilter
     ) {
         this.userDetailsService = userDetailsService;
-        this.authConfiguration = authConfiguration;
         this.jwtFilter = jwtFilter;
     }
 
@@ -65,12 +62,6 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager);
-//                .oauth2ResourceServer(oauth2 -> oauth2
-//                    .jwt(jwt -> jwt
-//                        .decoder(jwtDecoder())
-//                    )
-//                );
-
 
         return http.build();
     }
@@ -87,24 +78,4 @@ public class SecurityConfig {
 
         return authenticationManagerBuilder.build();
     }
-
-//    @Bean
-//    public JwtDecoder jwtDecoder() {
-//        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuerUri)
-//                .jwsAlgorithm(RS512).build();
-//
-//        OAuth2TokenValidator<Jwt> audienceValidator = audienceValidator();
-//        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-//        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-//
-//        jwtDecoder.setJwtValidator(withAudience);
-//        return jwtDecoder;
-//    }
-//
-//    OAuth2TokenValidator<Jwt> audienceValidator() {
-//        return new JwtClaimValidator<List<String>>(
-//            AUD,
-//            aud -> aud.stream().anyMatch(allowedAudiences::contains)
-//        );
-//    }
 }

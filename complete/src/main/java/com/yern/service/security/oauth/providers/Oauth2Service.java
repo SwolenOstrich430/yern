@@ -6,6 +6,7 @@ import com.yern.model.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
 import java.security.NoSuchProviderException;
 import java.util.Map;
 
@@ -13,5 +14,5 @@ public interface Oauth2Service {
     User processGrantCode(String code);
     String getAccessToken(String code);
     UserPostDto getUserFromAccessToken(String accessToken);
-    String getOauthInitiateUri(String email);
+    URI getOauthInitiateUri(String email);
 }

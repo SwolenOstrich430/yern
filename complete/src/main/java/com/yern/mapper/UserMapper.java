@@ -5,12 +5,14 @@ import com.yern.dto.user.UserGetDto;
 import com.yern.dto.user.UserPostDto;
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
+import org.springframework.stereotype.Component;
 
-// TODO:
-//  * add passwords
+@Component
 public class UserMapper {
 
-    public static User dtoToModel(UserPostDto userPostDto) {
+    public UserMapper() {}
+    
+    public User dtoToModel(UserPostDto userPostDto) {
         return new User(
             userPostDto.getFirstName(),
             userPostDto.getLastName(),
@@ -18,7 +20,7 @@ public class UserMapper {
         );
     }
 
-    public static UserGetDto modelToDto(User user) {
+    public UserGetDto modelToDto(User user) {
         return new UserGetDto(
             user.getId(),
             user.getEmail(),

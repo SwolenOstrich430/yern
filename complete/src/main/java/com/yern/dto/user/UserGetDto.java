@@ -1,5 +1,8 @@
 package com.yern.dto.user;
 
+import lombok.Getter;
+
+@Getter
 public class UserGetDto {
     private Long id;
     private String firstName;

@@ -1,9 +1,7 @@
 package com.yern.service.user;
 
-import com.yern.dto.user.UserGetDto;
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
-import com.yern.mapper.UserMapper;
 import com.yern.model.user.User;
 import com.yern.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,12 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    public UserService() {}
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public User getUserById(Long id) {
         return userRepository.getUserById(id);
     }
@@ -25,11 +29,6 @@ public class UserService {
 
     public User createUser(User user) {
        return userRepository.save(user);
-    }
-
-    public UserGetDto getUserGetDto(Long id) {
-        User user = this.getUserById(id);
-        return UserMapper.modelToDto(user);
     }
 
     public void validateUserForRegistration(UserPostDto user) throws DuplicateException {

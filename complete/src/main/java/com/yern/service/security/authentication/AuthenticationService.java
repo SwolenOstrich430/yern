@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.security.NoSuchProviderException;
 import java.util.Objects;
 
@@ -34,23 +35,29 @@ public class AuthenticationService {
     @Autowired
     private final JwtService jwtService;
 
+    @Autowired
+    private final UserMapper userMapper;
+
     public AuthenticationService(
             UserService userService,
             UserAuthenticationRepository userAuthenticationRepository,
-            PasswordEncoder passwordEncoder, Oauth2ServiceFactory oauth2ServiceFactory,
-            JwtService jwtService
+            PasswordEncoder passwordEncoder,
+            Oauth2ServiceFactory oauth2ServiceFactory,
+            JwtService jwtService,
+            UserMapper userMapper
     ) {
         this.userService = userService;
         this.userAuthenticationRepository = userAuthenticationRepository;
         this.passwordEncoder = passwordEncoder;
         this.oauth2ServiceFactory = oauth2ServiceFactory;
         this.jwtService = jwtService;
+        this.userMapper = userMapper;
     }
 
     public void registerUser(UserPostDto userDto) throws DuplicateException {
         userService.validateUserForRegistration(userDto);
 
-        User user = UserMapper.dtoToModel(userDto);
+        User user = userMapper.dtoToModel(userDto);
         User createdUser = userService.createUser(user);
 
         userAuthenticationRepository.save(
@@ -67,6 +74,8 @@ public class AuthenticationService {
         return new LoginResponse(email, token);
     }
 
+    // TODO: add cases for bad grant code
+    // TODO: think about handling error message for bad provider
     public LoginResponse processGrantCode(String provider, String code) throws NoSuchProviderException {
         Oauth2Service oauth2Service = oauth2ServiceFactory.getService(provider);
         User foundUser = oauth2Service.processGrantCode(code);
@@ -74,7 +83,8 @@ public class AuthenticationService {
         return loginUser(foundUser.getEmail());
     }
 
-    public String getOauthInitiateUri(String provider, String email) throws NoSuchProviderException {
+    // TODO: add test cases
+    public URI getOauthInitiateUri(String provider, String email) throws NoSuchProviderException {
         Oauth2Service oauth2Service = oauth2ServiceFactory.getService(provider);
         return oauth2Service.getOauthInitiateUri(email);
     }
