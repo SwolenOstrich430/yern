@@ -29,6 +29,47 @@ brew install postgres
 
 ### Stitch Counter 
 
+#### Database 
+
+#### Cache
+##### Redis 
+<b>Overview</b>
+
+<b>Methods and References</b>
+
+<b>Spring Classes</b>
+  * RedisTemplate: 
+  * RedisConnection: "provides the core building block for Redis communication, as it handles the communication with the Redis backend. It also automatically translates underlying connecting library exceptions to Spring’s consistent DAO exception hierarchy so that you can switch connectors without any code changes, as the operation semantics remain the same." Spring's implementation of RedisConnection/LettuceConnection aren't thread-safe. Lettuce's StatefulRedisConnection is though. 
+  * RedisStandaloneConfiguration: one server to handle reads and writes. 
+  * RedisSentinelConfiguration: master for writes and sentinel for reads 
+  * RedisClusterConnection: See https://docs.spring.io/spring-data/redis/reference/redis/connection-modes.html. 
+  * RedisConnectionFactory: creates RedisConnections (connection pooling?) and provides global exception translating.  
+  * RedisCacheManager: main provider for redis established as a bean in a config package. Makes use of a build method to provide settings (RedisCacheManagerBuilder).
+  * RedisCacheConfiguration: "lets you set key expiration times, prefixes, and RedisSerializer implementations for converting to and from the binary storage format" (<link href="https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html">Spring Redis Docs</link>). Can configure a global TTL via its enableTtl(Duration duration) function.  A custom implementation of Duration getTimeToLive can also be added at a per-cache-entry basis by supplying a custom TTLFunction.INSTANCE. A combination of global and per-cache configuration can also be provided. 
+  * RedisCacheWriter: required by RedisCacheManagerBuilder, provides create, update, delete operations and can manage TTL expiration dynamically on a per-cache basis. Allows the latter with RedisCacheWriter.TtlFunction (after 3.2.0).
+
+<b>Lettuce</b>
+* package: org.springframework.data.redis.connection.lettuce
+* Can be configured with a LettuceConnectionFactory Bean (redisConnectionFactory) in a configuration class 
+
+<b>FYIs</b>
+* cache key format = "<cache_name_prefix><cache_name>::<the_key>"
+* Time-to-Live (TTL): set and reset by create or update operation. NOT RESET ON GET OPERATIONS.
+* Time-to-Idle (TTI) expiration: reset by read and update operatinos. 
+
+<b>Questions</b>
+* Lock-free vs. locking RedisCacheWriter (defaults to lock-free -- <link href="https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html">The lack of entry locking can lead to overlapping, non-atomic commands for the Cache putIfAbsent and clean operations, as those require multiple commands to be sent to Redis. The locking counterpart prevents command overlap by setting an explicit lock key and checking against presence of this key, which leads to additional requests and potential command wait times"</link>)
+* What should the common format of keys be? E.g., "<resource>_<method>"?
+* What should the cache interface look like? Spring already has one defined?
+* BatchStrategy for RedisCacheManagerWriter? See "The cache implementation defaults to use KEYS and DEL to clear the cache." in Spring Redis docs
+* Lettuce or Jedis for connection provider? (Probably Lettuce.)
+* What is automatic failover? Sentinel?
+* Write to Master, Read from Replica is best strategy? Probably. 
+
+<b> References</b>
+* https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html
+
+  
 #### Design 
 I have this many stitches for a project. 
 
