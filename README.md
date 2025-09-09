@@ -68,6 +68,8 @@ brew install postgres
 
 <b> References</b>
 * https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html
+* https://aws.amazon.com/blogs/architecture/data-caching-across-microservices-in-a-serverless-architecture/
+* https://softwaremill.com/caches-in-microservice-architecture/
 
   
 #### Design 
