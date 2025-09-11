@@ -38,7 +38,8 @@ brew install postgres
 <b>Methods and References</b>
 
 <b>Spring Classes</b>
-  * RedisTemplate: 
+  * RedisTemplate: central class for Redis module. The template takes care of serialization and connection management, freeing the user from dealing with such details. Implements the RedisOperations interface. Lower-level access to Redis' actual, underlying methods. 
+  * ReactiveRedisTemplate: mirror of RedisTemplate and implements the ReactiveRedisOperations interface. 
   * RedisConnection: "provides the core building block for Redis communication, as it handles the communication with the Redis backend. It also automatically translates underlying connecting library exceptions to Spring’s consistent DAO exception hierarchy so that you can switch connectors without any code changes, as the operation semantics remain the same." Spring's implementation of RedisConnection/LettuceConnection aren't thread-safe. Lettuce's StatefulRedisConnection is though. 
   * RedisStandaloneConfiguration: one server to handle reads and writes. 
   * RedisSentinelConfiguration: master for writes and sentinel for reads 
