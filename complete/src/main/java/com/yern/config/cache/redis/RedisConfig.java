@@ -20,14 +20,6 @@ import io.lettuce.core.resource.DefaultClientResources;
 @Configuration
 public class RedisConfig {
 
-//    @Bean
-//    public RedisCacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
-//        return RedisCacheManager
-//                .builder(RedisCacheWriter.lockingRedisCacheWriter(connectionFactory))
-//                .cacheDefaults(redisCacheConfiguration())
-//                .build();
-//    }
-
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -37,11 +29,6 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
-
-//    public RedisCacheConfiguration redisCacheConfiguration() {
-//        return RedisCacheConfiguration.defaultCacheConfig()
-//                .entryTtl(TtlFunctionImpl.INSTANCE);
-//    }
 
     @Bean
     public RedisConnectionFactory lettuceConnectionFactory(
@@ -80,6 +67,9 @@ public class RedisConfig {
 
     @Bean
     public RedisClusterConfiguration customRedisCluster(RedisProperties redisProperties) {
-        return new RedisClusterConfiguration(redisProperties.getNodes());
+        RedisClusterConfiguration config = new RedisClusterConfiguration(redisProperties.getNodes());
+        config.setMaxRedirects(redisProperties.getMaxRedirects());
+
+        return config;
     }
 }
