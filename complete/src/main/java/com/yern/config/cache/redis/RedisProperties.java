@@ -3,12 +3,13 @@ package com.yern.config.cache.redis;
 import java.time.Duration;
 import java.util.List;
 
-import lombok.Data;
-import lombok.Getter;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+
+import lombok.Data;
+import lombok.Getter;
 
 @Getter
 @Data
@@ -22,6 +23,7 @@ public class RedisProperties {
     private final int maxIdlePool;
     private final int minIdlePool;
     private final Duration maxWait;
+    private final int maxRedirects;
 
     public RedisProperties(
             Duration readTimeout,
@@ -29,7 +31,8 @@ public class RedisProperties {
             int maxTotalPool,
             int maxIdlePool,
             int minIdlePool,
-            Duration maxWait
+            Duration maxWait,
+            int maxRedirects
     ) {
         this.readTimeout = readTimeout;
         this.nodes = nodes;
@@ -37,6 +40,7 @@ public class RedisProperties {
         this.maxIdlePool = maxIdlePool;
         this.minIdlePool = minIdlePool;
         this.maxWait = maxWait;
+        this.maxRedirects = maxRedirects;
     }
 
     public <T> GenericObjectPoolConfig<T> getPoolConfig() {
