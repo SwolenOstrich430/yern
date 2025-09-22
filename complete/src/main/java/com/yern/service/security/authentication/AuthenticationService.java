@@ -21,10 +21,10 @@ import java.util.Objects;
 @Service
 public class AuthenticationService {
     @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    private UserAuthenticationRepository userAuthenticationRepository;
+    private final UserAuthenticationRepository userAuthenticationRepository;
 
     @Autowired
     private final PasswordEncoder passwordEncoder;

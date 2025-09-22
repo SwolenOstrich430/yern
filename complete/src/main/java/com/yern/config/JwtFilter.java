@@ -1,11 +1,10 @@
 package com.yern.config;
 
-import com.yern.service.security.authentication.JwtService;
-import com.yern.service.security.authentication.UserDetailsServiceImpl;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,17 +16,20 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.util.List;
-import java.util.Optional;
+import com.yern.service.security.authentication.JwtService;
+import com.yern.service.security.authentication.UserDetailsServiceImpl;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     // TODO: probably a library that has this
     private final String AUTH_HEADER = "Authorization";
 
-    @Value("${security.auth.oauth2.token_prefix}")
+    @Value("${security.auth.oauth2.token-prefix}")
     private String tokenPrefix;
 
     @Value("${api.endpoints.auth.base-uri}")
