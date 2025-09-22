@@ -1,0 +1,13 @@
+# Scrape metrics every 5 seconds and name the monitor 'stats-monitor'
+global:
+  scrape_interval: 5s
+  external_labels:
+    monitor: 'stats-monitor'
+
+# We're going to name our job 'DockerStats' and we'll connect to the docker0
+# bridge address to get the stats. If your docker0 has a different IP address
+# then use that instead. 127.0.0.1 and localhost will not work.
+scrape_configs:
+  - job_name: 'DockerStats'
+    static_configs:
+      - targets: ['172.17.0.1:9323']
