@@ -188,7 +188,7 @@ public final class GoogleOauth2Service implements Oauth2Service {
     }
 
     private String getStateCacheKey(String email) {
-        return "oauth2_google_" + email.hashCode();
+        return "oauth2_google_state_" + email.hashCode();
     }
 
     private String getStateValue() {
