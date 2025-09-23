@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -15,21 +16,29 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.Secret;
+import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.SecretVersion;
+import com.google.cloud.secretmanager.v1.Replication;
+import com.google.protobuf.ByteString;
+
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.io.IOException;
 import java.time.Duration;
-
+ 
 
 public class GoogleSecretManagerTest {
     private GoogleSecretManager manager;
     private SecretManagerServiceClient client;
     private final Duration maxClientLifeInMinutes = Duration.ofMinutes(1);
+    private final String projectId = UUID.randomUUID().toString();
 
     @BeforeEach 
     public void setup() {
         this.client = mock(SecretManagerServiceClient.class);
-        this.manager = new GoogleSecretManager(maxClientLifeInMinutes);
+        this.manager = new GoogleSecretManager(maxClientLifeInMinutes, projectId);
         this.manager.setClient(client);
     }
 
@@ -79,6 +88,65 @@ public class GoogleSecretManagerTest {
 
         LocalDateTime newReset = this.manager.getLastClientResetAt();
         assertTrue(newReset.isAfter(oldReset));
+    }
+
+    @Test 
+    public void create_createsANewSecret() {
+        GoogleSecretManager spy = Mockito.spy(this.manager);
+
+        String secretId = "1";
+        String secretVal = "boop";
+        Secret secret = mock(Secret.class);
+        SecretPayload payload = mock(SecretPayload.class);
+
+        Mockito.when(
+            this.client.createSecret(
+                this.projectId, 
+                secretId, 
+                secret
+            )
+        ).thenReturn(secret);
+        Mockito.when(
+            secret.getName()
+        ).thenReturn(secretId);
+        doReturn(secret).when(spy).getBaseSecretTemplate();
+        doReturn(payload).when(spy).getCreateSecretPayload(secretVal);
+
+        spy.create(secretId, secretVal);
+
+        Mockito.verify(
+            this.client, 
+            Mockito.times(1)
+        ).createSecret(
+            this.projectId,
+            secretId,
+            secret
+        );
+
+        Mockito.verify(
+            this.client,
+            Mockito.times(1)
+        ).addSecretVersion(
+            secretId,
+            payload
+        );
+    }
+
+    @Test 
+    public void getBaseSecretTemplate_returnsASecret_withAutoamticReplication() {
+        Secret secret = this.manager.getBaseSecretTemplate();
+        assertInstanceOf(Secret.class, secret);
+        // javadoc: https://cloud.google.com/java/docs/reference/google-cloud-secretmanager/2.3.0/com.google.cloud.secretmanager.v1beta1.Replication#com_google_cloud_secretmanager_v1beta1_Replication_hasAutomatic__
+        assertTrue(secret.getReplication().hasAutomatic());
+    }
+
+    @Test 
+    public void getCreateSecretPayload_returnsASecret_withTheProvidedStringAsItsValue() {
+        String secret = "hello";
+        SecretPayload payload = this.manager.getCreateSecretPayload(secret);
+
+        assertInstanceOf(SecretPayload.class, payload);
+        assertEquals(payload.getData(), ByteString.copyFromUtf8(secret));
     }
 
     @Test 

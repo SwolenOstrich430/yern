@@ -5,8 +5,15 @@ import com.yern.service.secrets.SecretAlreadyExistsException;
 import com.yern.service.secrets.SecretManager;
 
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.Secret;
+import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.SecretVersion;
+import com.google.cloud.secretmanager.v1.Replication;
+import com.google.protobuf.ByteString;
+
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,18 +24,28 @@ import java.time.Duration;
  * Implementation of the SecretsManager interface for Google. Idea is to be able to switch between
  * different secret managers easily if we move to a different cloud provider.
  */
+@Service
 public class GoogleSecretManager implements SecretManager {
     private SecretManagerServiceClient client;
     private Duration maxClientLifeInMinutes;
     private LocalDateTime lastClientResetAt;
+    // TODO: this should be returned dynamically in another story 
+    private String projectId;
 
-    public GoogleSecretManager() {}
+    public GoogleSecretManager(
+        @Value("${cloud.gcp.project-id}") String projectId
+    ) {
+        this.projectId = projectId;
+    }
     
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
-        Duration maxClientLifeInMinutes
+        Duration maxClientLifeInMinutes,
+        @Value("${cloud.gcp.project-id}")
+        String projectId
     ) {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
+        this.projectId = projectId;
     }
 
     /**
@@ -55,7 +72,17 @@ public class GoogleSecretManager implements SecretManager {
     }
 
     public void create(String secretName, String secret) throws SecretAlreadyExistsException {
+        Secret baseSecret = this.getBaseSecretTemplate();
+        Secret createdSecret = this.client.createSecret(
+            this.projectId, secretName, baseSecret
+        );
 
+        SecretPayload payload = getCreateSecretPayload(secret);
+
+        client.addSecretVersion(
+            createdSecret.getName(), 
+            payload
+        );
     }
 
     public void delete(String secretName, Optional<String> version) throws RuntimeException {
@@ -64,6 +91,28 @@ public class GoogleSecretManager implements SecretManager {
 
     public void disable(String secretName) throws RuntimeException {
 
+    }
+
+    public Secret getBaseSecretTemplate() {
+        return Secret
+                .newBuilder()
+                .setReplication(
+                    Replication.newBuilder()
+                        .setAutomatic(
+                            Replication.Automatic.newBuilder().build()
+                    )
+                    .build()
+                )
+                .build();
+    }
+
+    public SecretPayload getCreateSecretPayload(String secret) {
+        return SecretPayload
+                    .newBuilder()
+                    .setData(
+                        ByteString.copyFromUtf8(secret)
+                    )
+                    .build();
     }
 
     public SecretManagerServiceClient createClient() throws IOException {
