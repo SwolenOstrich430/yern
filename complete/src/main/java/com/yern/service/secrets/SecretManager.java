@@ -1,5 +1,8 @@
 package com.yern.service.secrets;
 
+import com.yern.service.secrets.SecretNotFoundException;
+import com.yern.service.secrets.SecretAlreadyExistsException;
+
 import java.util.Optional;
 
 /**
