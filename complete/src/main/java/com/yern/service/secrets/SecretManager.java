@@ -24,6 +24,7 @@ public interface SecretManager {
      * @param secret The actual value to be stored under the `secretName`
      * @throws SecretAlreadyExistException If that secret already exists. 
     */
+    public void create(String secretName, String secret) throws SecretAlreadyExistException;
 
     /**
      * Complete removes a secret based on the provided name.
