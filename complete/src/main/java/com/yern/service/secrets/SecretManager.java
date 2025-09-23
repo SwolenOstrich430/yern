@@ -22,9 +22,9 @@ public interface SecretManager {
      *
      * @param secretName The full name of the secret.
      * @param secret The actual value to be stored under the `secretName`
-     * @throws SecretAlreadyExistException If that secret already exists. 
+     * @throws SecretAlreadyExistsException If that secret already exists. 
     */
-    public void create(String secretName, String secret) throws SecretAlreadyExistException;
+    public void create(String secretName, String secret) throws SecretAlreadyExistsException;
 
     /**
      * Complete removes a secret based on the provided name.
@@ -39,7 +39,7 @@ public interface SecretManager {
      * Updates the supplied secret to a state that is no longer considered valid for production use.
      * 
      * @param secretName The full name of the secret.
-     * @throws SecretNotFoundException If the secret cannot be found.
+     * @throws RuntimeException If the secret cannot be found.
     */
-    public void disable(String secretName);
+    public void disable(String secretName) throws RuntimeException;
 }
