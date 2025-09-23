@@ -74,7 +74,7 @@ public class GoogleSecretManagerTest {
     public void setClient_setsLastClientResetAt_toCurrentTime() throws InterruptedException {
         LocalDateTime oldReset = this.manager.getLastClientResetAt();
         
-        Thread.sleep(1000);
+        Thread.sleep(10);
         this.manager.setLastClientResetAt();
 
         LocalDateTime newReset = this.manager.getLastClientResetAt();

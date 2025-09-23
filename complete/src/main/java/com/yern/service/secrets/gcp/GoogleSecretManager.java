@@ -22,16 +22,13 @@ public class GoogleSecretManager implements SecretManager {
     private Duration maxClientLifeInMinutes;
     private LocalDateTime lastClientResetAt;
 
-    public GoogleSecretManager() {
-        this.setLastClientResetAt();
-    }
+    public GoogleSecretManager() {}
     
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
         Duration maxClientLifeInMinutes
     ) {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
-        this.setLastClientResetAt();
     }
 
     /**
@@ -46,6 +43,7 @@ public class GoogleSecretManager implements SecretManager {
 
     public void setClient(SecretManagerServiceClient newClient) {
         this.client = newClient;
+        this.setLastClientResetAt();
     }
 
     public SecretManagerServiceClient getClient() {
@@ -76,16 +74,25 @@ public class GoogleSecretManager implements SecretManager {
         return SecretManagerServiceClient.create();
     }
 
-    public boolean isClientExpired() {
+    public boolean isClientExpired() {        
+        return (
+            this.client.isShutdown() || 
+            this.hasClientReachedTtl()
+        );
+    }
+
+    public boolean hasClientReachedTtl() {
+        if (!(this.lastClientResetAt instanceof LocalDateTime) || (this.lastClientResetAt == null)) {
+            return false;
+        }
+
         LocalDateTime currTime = LocalDateTime.now();
         LocalDateTime expiry = this.lastClientResetAt.plus(
             this.maxClientLifeInMinutes
         );
-        
+
         return (
-            this.client.isShutdown() || 
-            currTime.isAfter(expiry) || 
-            currTime.isEqual(expiry)
+            currTime.isAfter(expiry) || currTime.isEqual(expiry)
         );
     }
 
@@ -101,3 +108,4 @@ public class GoogleSecretManager implements SecretManager {
         this.lastClientResetAt = LocalDateTime.now();
     }
 }
+
