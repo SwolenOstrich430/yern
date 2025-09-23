@@ -9,6 +9,10 @@ brew install java
 ### Install Postgres 
 brew install postgres 
 
+### Authenticate to Cloud 
+#### GCP 
+Follow the insturctions in *./cloud/gcp/auth/README.md*.
+
 
 ## Definitions 
 
