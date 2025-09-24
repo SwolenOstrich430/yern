@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.doReturn;
@@ -28,6 +29,7 @@ import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.protobuf.ByteString;
 
 import com.yern.service.secrets.SecretNotFoundException; 
@@ -36,16 +38,16 @@ public class GoogleSecretManagerTest {
     private GoogleSecretManager manager;
     private SecretManagerServiceClient client;
     private final Duration maxClientLifeInMinutes = Duration.ofMinutes(1);
-    private final String projectId = "projects/" + UUID.randomUUID().toString();
+    private String projectId; 
     private final String versionAlias = "latest";
 
     @BeforeEach 
     public void setup() throws IOException {
         this.client = mock(SecretManagerServiceClient.class);
+        this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
 
         this.manager = new GoogleSecretManager(
             maxClientLifeInMinutes, 
-            projectId,
             versionAlias,
             this.client
         );
@@ -123,13 +125,7 @@ public class GoogleSecretManagerTest {
         
         AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
         Mockito.when(client.accessSecretVersion(req)).thenReturn(resp);
-
-        SecretPayload payload = mock(SecretPayload.class);
-        Mockito.when(resp.getPayload()).thenReturn(payload);
-        ByteString respStr = mock(ByteString.class);
-
-        Mockito.when(payload.getData()).thenReturn(respStr);
-        Mockito.when(respStr.toString()).thenReturn(secretName);
+        doReturn(secretName).when(spy).parseAccessSecretResponse(resp, secretName);
 
         assertEquals(
             spy.get(secretName, version),
@@ -138,23 +134,34 @@ public class GoogleSecretManagerTest {
     }
 
     @Test 
-    public void get_ifVersionIsEmpty_ItReturnsTheLatestVersionOfThatSecret() {
+    public void get_ifSecretNameAndVersionMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() throws IOException {
+        String secretName = UUID.randomUUID().toString();
+        String rawSecret = "1";
+        Optional<String> version = Optional.of(rawSecret);
 
-    }
-
-    @Test 
-    public void get_ifSecretNameAndVersionMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() {
+        GoogleSecretManager spy = Mockito.spy(this.manager);
+        AccessSecretVersionRequest req = mock(AccessSecretVersionRequest.class);
         
-    }
+        doReturn(req).when(spy).getSecretAccessRequest(
+            secretName,
+            version
+        );
+        
+        AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
+        Mockito.when(client.accessSecretVersion(req)).thenReturn(resp);
 
-    @Test 
-    public void get_ifSecretNameDoesNotMatchAnExistingSecret_ItThrowsSecretNotFoundException() {
+        SecretPayload payload = mock(SecretPayload.class);
+        Mockito.when(resp.getPayload()).thenReturn(payload);
+        ByteString respStr = mock(ByteString.class);
 
-    }
+        Mockito.when(payload.getData()).thenReturn(respStr);
+        Mockito.when(respStr.toString()).thenReturn(secretName);
+        doReturn(secretName).when(spy).parseAccessSecretResponse(resp, secretName);
 
-    @Test 
-    public void get_ifSecretNameMatchesAnExistingSecretButVersionDoesNotExist_ItThrowsSecretNotFoundException() {
-
+        assertEquals(
+            spy.get(secretName, version),
+            secretName
+        );
     }
 
     @Test 
@@ -196,6 +203,41 @@ public class GoogleSecretManagerTest {
         ).addSecretVersion(
             secretId,
             payload
+        );
+    }
+
+    @Test 
+    public void parseAccessSecretResponse_ifResponseHasPayload_itReturnsPayloadAsAString() {
+        String secretName = UUID.randomUUID().toString();
+        GoogleSecretManager spy = Mockito.spy(this.manager);
+        AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
+
+        SecretPayload payload = mock(SecretPayload.class);
+        Mockito.when(resp.getPayload()).thenReturn(payload);
+        ByteString respStr = mock(ByteString.class);
+
+        Mockito.when(payload.getData()).thenReturn(respStr);
+        Mockito.when(respStr.toString()).thenReturn(secretName);
+        Mockito.when(resp.hasPayload()).thenReturn(true);
+
+        assertEquals(
+            spy.parseAccessSecretResponse(resp, secretName),
+            secretName
+        );
+    }
+
+
+    @Test 
+    public void parseAccessSecretResponse_ifResponseDoesntHavePayload_throwsSecretNotFoundException()  throws SecretNotFoundException {
+        String secretName = UUID.randomUUID().toString();
+        GoogleSecretManager spy = Mockito.spy(this.manager);
+        AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
+
+        Mockito.when(resp.hasPayload()).thenReturn(false);
+
+        assertThrows(
+            SecretNotFoundException.class,
+            () -> spy.parseAccessSecretResponse(resp, secretName) // The code that is expected to throw the exception
         );
     }
 
