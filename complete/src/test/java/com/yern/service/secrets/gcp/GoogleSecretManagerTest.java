@@ -28,6 +28,7 @@ import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.protobuf.ByteString;
 
 import com.yern.service.secrets.SecretNotFoundException; 
@@ -36,16 +37,16 @@ public class GoogleSecretManagerTest {
     private GoogleSecretManager manager;
     private SecretManagerServiceClient client;
     private final Duration maxClientLifeInMinutes = Duration.ofMinutes(1);
-    private final String projectId = "projects/" + UUID.randomUUID().toString();
+    private String projectId; 
     private final String versionAlias = "latest";
 
     @BeforeEach 
     public void setup() throws IOException {
         this.client = mock(SecretManagerServiceClient.class);
+        this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
 
         this.manager = new GoogleSecretManager(
             maxClientLifeInMinutes, 
-            projectId,
             versionAlias,
             this.client
         );
