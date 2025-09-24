@@ -22,13 +22,15 @@ import com.yern.service.secrets.SecretAlreadyExistsException;
 import com.yern.service.secrets.SecretManager;
 import com.yern.service.secrets.SecretNotFoundException;
 
+import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
+
 /**
  * Implementation of the SecretsManager interface for Google. Idea is to be able to switch between
  * different secret managers easily if we move to a different cloud provider.
+ * TODO: look into https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/main/spring-cloud-gcp-secretmanager/src/main/java/com/google/cloud/spring/secretmanager/SecretManagerTemplate.java
  */
 @Service
 public class GoogleSecretManager implements SecretManager {
-    @Autowired 
     private SecretManagerServiceClient client;
     private final Duration maxClientLifeInMinutes;
     private LocalDateTime lastClientResetAt;
@@ -39,15 +41,14 @@ public class GoogleSecretManager implements SecretManager {
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
         Duration maxClientLifeInMinutes,
-        @Value("${cloud.gcp.full-project-id}")
-        String projectId,
         @Value("${secrets.google.latest-version-alias}")
         String latestVersionAlias,
+        @Autowired 
         SecretManagerServiceClient client
     ) throws IOException {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
-        // TODO: turn this into an env variable 
-        this.projectId = projectId;
+        // TODO: move this into a util method 
+        this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
         this.latestVersionAlias = latestVersionAlias;
         this.setClient(client);
     }
