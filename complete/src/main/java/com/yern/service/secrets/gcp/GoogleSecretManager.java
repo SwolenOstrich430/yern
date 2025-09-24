@@ -1,24 +1,26 @@
 package com.yern.service.secrets.gcp;
 
-import com.yern.service.secrets.SecretNotFoundException;
-import com.yern.service.secrets.SecretAlreadyExistsException;
-import com.yern.service.secrets.SecretManager;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1.Secret;
-import com.google.cloud.secretmanager.v1.SecretPayload;
-import com.google.cloud.secretmanager.v1.SecretVersion;
-import com.google.cloud.secretmanager.v1.Replication;
-import com.google.protobuf.ByteString;
-
-import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.time.LocalDateTime;
-import java.time.Duration;
+import com.google.cloud.secretmanager.v1.AccessSecretVersionRequest;
+import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
+import com.google.cloud.secretmanager.v1.Replication;
+import com.google.cloud.secretmanager.v1.Secret;
+import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.google.protobuf.ByteString;
+import com.yern.service.secrets.SecretAlreadyExistsException;
+import com.yern.service.secrets.SecretManager;
+import com.yern.service.secrets.SecretNotFoundException;
 
 /**
  * Implementation of the SecretsManager interface for Google. Idea is to be able to switch between
@@ -31,34 +33,35 @@ public class GoogleSecretManager implements SecretManager {
     private LocalDateTime lastClientResetAt;
     // TODO: this should be returned dynamically in another story 
     private String projectId;
+    private String latestVersionAlias;
 
-    public GoogleSecretManager(
-        @Value("${cloud.gcp.project-id}") String projectId
-    ) {
-        this.projectId = projectId;
-    }
-    
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
         Duration maxClientLifeInMinutes,
-        @Value("${cloud.gcp.project-id}")
-        String projectId
-    ) {
+        @Value("${cloud.gcp.full-project-id}")
+        String projectId,
+        @Value("${secrets.google.latest-version-alias}")
+        String latestVersionAlias,
+        @Autowired 
+        SecretManagerServiceClient client
+    ) throws IOException {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
+        // TODO: turn this into an env variable 
         this.projectId = projectId;
+        this.setClient(client);
     }
 
     /**
      * Sets 
      */
-    public void setClient() throws IOException {
+    public final void setClient() throws IOException {
         if ((this.client == null) || this.isClientExpired()) {
             this.setLastClientResetAt();
             this.client = this.createClient();
         }
     }
 
-    public void setClient(SecretManagerServiceClient newClient) {
+    public final void setClient(SecretManagerServiceClient newClient) {
         this.client = newClient;
         this.setLastClientResetAt();
     }
@@ -67,11 +70,26 @@ public class GoogleSecretManager implements SecretManager {
         return client;
     }
 
-    public String get(String secretName, Optional<String> version) throws SecretNotFoundException {
-        return "";
+    public String get(
+        String secretName, 
+        Optional<String> version
+     ) throws IOException, SecretNotFoundException {
+        AccessSecretVersionRequest req = getSecretAccessRequest(
+            secretName, version
+        );
+        AccessSecretVersionResponse resp = client.accessSecretVersion(req);
+
+        // if (!response.hasPayload()) {
+
+        // }
+
+        // TODO: don't hardcode the character set
+        return resp.getPayload().getData().toString();
     }
 
-    public void create(String secretName, String secret) throws SecretAlreadyExistsException {
+    public void create(String secretName, String secret) throws IOException, SecretAlreadyExistsException {
+        setClient();
+
         Secret baseSecret = this.getBaseSecretTemplate();
         Secret createdSecret = this.client.createSecret(
             this.projectId, secretName, baseSecret
@@ -79,7 +97,7 @@ public class GoogleSecretManager implements SecretManager {
 
         SecretPayload payload = getCreateSecretPayload(secret);
 
-        client.addSecretVersion(
+        this.client.addSecretVersion(
             createdSecret.getName(), 
             payload
         );
@@ -115,12 +133,44 @@ public class GoogleSecretManager implements SecretManager {
                     .build();
     }
 
+    public AccessSecretVersionRequest getSecretAccessRequest(
+        String secretName,
+        Optional<String> version
+    ) {
+        SecretVersionName formattedVersion = 
+            SecretVersionName.ofProjectSecretSecretVersionName(
+                this.projectId,
+                secretName,
+                version.orElse(this.latestVersionAlias)
+            );
+        
+        return AccessSecretVersionRequest
+                    .newBuilder()
+                    .setName(formattedVersion.toString())
+                    .build();
+
+    }
+
     public SecretManagerServiceClient createClient() throws IOException {
         if (this.client != null) {
-            this.client.close();
+            this.closeClient();
         }
 
         return SecretManagerServiceClient.create();
+    }
+
+    public void closeClient() {
+        if (client == null) {
+            return;
+        }
+
+        try {
+            if (!client.awaitTermination(2, TimeUnit.SECONDS)) {
+                client.close();
+            }
+        } catch (Exception exception) {
+            client.close(); 
+        }
     }
 
     public boolean isClientExpired() {        
