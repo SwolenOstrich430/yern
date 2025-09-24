@@ -28,12 +28,13 @@ import com.yern.service.secrets.SecretNotFoundException;
  */
 @Service
 public class GoogleSecretManager implements SecretManager {
+    @Autowired 
     private SecretManagerServiceClient client;
-    private Duration maxClientLifeInMinutes;
+    private final Duration maxClientLifeInMinutes;
     private LocalDateTime lastClientResetAt;
     // TODO: this should be returned dynamically in another story 
-    private String projectId;
-    private String latestVersionAlias;
+    private final String projectId;
+    private final String latestVersionAlias;
 
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
@@ -42,17 +43,17 @@ public class GoogleSecretManager implements SecretManager {
         String projectId,
         @Value("${secrets.google.latest-version-alias}")
         String latestVersionAlias,
-        @Autowired 
         SecretManagerServiceClient client
     ) throws IOException {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
         // TODO: turn this into an env variable 
         this.projectId = projectId;
+        this.latestVersionAlias = latestVersionAlias;
         this.setClient(client);
     }
 
     /**
-     * Sets 
+     * Spring should now be managing this? 
      */
     public final void setClient() throws IOException {
         if ((this.client == null) || this.isClientExpired()) {
@@ -74,17 +75,14 @@ public class GoogleSecretManager implements SecretManager {
         String secretName, 
         Optional<String> version
      ) throws IOException, SecretNotFoundException {
+        setClient();
+
         AccessSecretVersionRequest req = getSecretAccessRequest(
             secretName, version
         );
         AccessSecretVersionResponse resp = client.accessSecretVersion(req);
 
-        // if (!response.hasPayload()) {
-
-        // }
-
-        // TODO: don't hardcode the character set
-        return resp.getPayload().getData().toString();
+        return parseAccessSecretResponse(resp, secretName); 
     }
 
     public void create(String secretName, String secret) throws IOException, SecretAlreadyExistsException {
@@ -109,6 +107,18 @@ public class GoogleSecretManager implements SecretManager {
 
     public void disable(String secretName) throws RuntimeException {
 
+    }
+
+    // TODO: figure out how serializing fits into this
+    public String parseAccessSecretResponse(
+        AccessSecretVersionResponse response,
+        String secretName
+    ) {
+        if (!response.hasPayload()) {
+            throw new SecretNotFoundException(secretName);
+        }
+
+        return response.getPayload().getData().toString();
     }
 
     public Secret getBaseSecretTemplate() {
@@ -190,6 +200,7 @@ public class GoogleSecretManager implements SecretManager {
             this.maxClientLifeInMinutes
         );
 
+        // TODO: check if >= exists?
         return (
             currTime.isAfter(expiry) || currTime.isEqual(expiry)
         );
