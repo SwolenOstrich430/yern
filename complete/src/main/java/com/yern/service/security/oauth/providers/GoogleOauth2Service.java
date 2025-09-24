@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.yern.dto.user.UserPostDto;
 import com.yern.model.user.User;
 import com.yern.repository.user.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -16,17 +17,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.yern.service.cache.CacheService;
 
 // TODO: move the instance variables to config object or think about creating a builder/factory
 @Service("oauth2_google")
@@ -35,6 +35,9 @@ public final class GoogleOauth2Service implements Oauth2Service {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired 
+    private CacheService cacheService;
 
     private String clientId;
     private String clientSecret;
@@ -76,8 +79,6 @@ public final class GoogleOauth2Service implements Oauth2Service {
         this.responseType = responseType;
         this.baseUrl = baseUrl;
     }
-
-    public GoogleOauth2Service() {}
 
     public URI getOauthInitiateUri(String email) {
         MultiValueMap<String, String> params = getOauthInitiateParams(email);
@@ -178,17 +179,16 @@ public final class GoogleOauth2Service implements Oauth2Service {
                 .collect(Collectors.joining(" "));
     }
 
-    // This should probably be a util method
     public String getSetState(String email) {
         String state = getStateValue();
         String cacheKey = getStateCacheKey(email);
 
-        return state;
-//        return cacheService.getSet(cacheKey, state);
+       cacheService.set(cacheKey, state);
+       return state;
     }
 
     private String getStateCacheKey(String email) {
-        return "oauth2_google_" + email.hashCode();
+        return "oauth2_google_state_" + email.hashCode();
     }
 
     private String getStateValue() {
