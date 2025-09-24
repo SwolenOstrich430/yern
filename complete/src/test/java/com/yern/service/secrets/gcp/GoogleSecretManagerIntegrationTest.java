@@ -1,44 +1,56 @@
-package com.yern.service.secrets.gcp;
+// package com.yern.service.secrets.gcp;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.Order;
 
+// import java.io.IOException;
+// import java.util.HashMap;
+// import java.util.Optional;
+// import java.util.Map;
 
-import java.time.Duration;
-import java.util.UUID;
+// import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.beans.factory.annotation.Autowired;
+// @SpringBootTest(classes = GoogleSecretManager.class)
+// public class GoogleSecretManagerIntegrationTest {
+//     @Autowired
+//     private GoogleSecretManager manager;
+//     private HashMap<String, String> secretsByNames;
 
-import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+//     public GoogleSecretManagerIntegrationTest(GoogleSecretManager manager) {
+//         this.manager = manager;
+//     }
 
-@SpringBootTest(classes = GoogleSecretManager.class)
-public class GoogleSecretManagerIntegrationTest {
-    @Autowired
-    private GoogleSecretManager manager;
+//     @BeforeEach 
+//     public void setup() {
+//         if (!(secretsByNames.isEmpty())) {
+//             secretsByNames.put("boop", "bop");
+//             secretsByNames.put("boop1", "bop1");
+//             secretsByNames.put("boop2", "bop2");
+//             secretsByNames.put("boop3", "bop3");
+//         }
+//     }
 
-    /**
-     * 1. Create secrets
-     * 2. Get individual secrets 
-     * 3. Disable a secret 
-     * 4. Delete a secret 
-     */
-    // @Test 
-    // @Order(1)
-    // public void create() {
-        
-    // }
-}
+//     @Test 
+//     @Order(1)
+//     public void createInitialSecretVersions() {
+//         for(Map.Entry<String, String>entry : secretsByNames.entrySet()) {
+//             assertDoesNotThrow(() -> manager.create(entry.getKey(), entry.getValue()));
+//         }
+//     }
+
+//     @Test 
+//     @Order(2)
+//     public void getInitialSecrets() throws IOException {
+//         for(Map.Entry<String, String>entry : secretsByNames.entrySet()) {
+//             assertEquals(
+//                 this.manager.get(entry.getKey(), Optional.empty()),
+//                 entry.getValue()
+//             );
+//         }
+//     }
+// }
