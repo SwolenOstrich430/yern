@@ -17,6 +17,7 @@ import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.protobuf.ByteString;
 import com.yern.service.secrets.SecretAlreadyExistsException;
 import com.yern.service.secrets.SecretManager;
@@ -28,26 +29,23 @@ import com.yern.service.secrets.SecretNotFoundException;
  */
 @Service
 public class GoogleSecretManager implements SecretManager {
-    @Autowired 
     private SecretManagerServiceClient client;
     private final Duration maxClientLifeInMinutes;
     private LocalDateTime lastClientResetAt;
-    // TODO: this should be returned dynamically in another story 
     private final String projectId;
     private final String latestVersionAlias;
 
     public GoogleSecretManager(
         @Value("${secrets.google.client.max-life-in-minutes}") 
         Duration maxClientLifeInMinutes,
-        @Value("${cloud.gcp.full-project-id}")
-        String projectId,
         @Value("${secrets.google.latest-version-alias}")
         String latestVersionAlias,
+        @Autowired 
         SecretManagerServiceClient client
     ) throws IOException {
         this.maxClientLifeInMinutes = maxClientLifeInMinutes;
-        // TODO: turn this into an env variable 
-        this.projectId = projectId;
+        // TODO: move this into a util method 
+        this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
         this.latestVersionAlias = latestVersionAlias;
         this.setClient(client);
     }
