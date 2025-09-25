@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <version>1.18.42</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -120,7 +120,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version> <!-- Use your Lombok version -->
+                            <version>1.18.42</version> 
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
