@@ -27,7 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
     // TODO: probably a library that has this
     private final String AUTH_HEADER = "Authorization";
 
-    @Value("${security.auth.oauth2.token_prefix}")
+    @Value("${security.auth.oauth2.token-prefix}")
     private String tokenPrefix;
 
     @Value("${api.endpoints.auth.base-uri}")
