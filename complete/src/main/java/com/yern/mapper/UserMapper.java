@@ -1,12 +1,14 @@
 package com.yern.mapper;
 
-import org.mapstruct.Mapper;
-
 import com.yern.dto.user.UserGetDto;
 import com.yern.dto.user.UserPostDto;
 import com.yern.model.user.User;
+import org.springframework.stereotype.Component;
+
+import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
+@Component
 public class UserMapper {
 
     public UserMapper() {}
