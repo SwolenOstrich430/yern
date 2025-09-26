@@ -31,7 +31,7 @@ import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.protobuf.ByteString;
-
+import com.yern.service.secrets.SecretImpl;
 import com.yern.service.secrets.SecretNotFoundException; 
 
 public class GoogleSecretManagerTest {
@@ -58,60 +58,8 @@ public class GoogleSecretManagerTest {
         this.client.close();
     }
 
-    @Test
-    public void setClient_setsClient_whenClientIsNull() throws IOException {
-        this.manager.setClient(null);
-        assertNull(manager.getClient());    
-
-        manager.setClient();
-        assertInstanceOf(
-            SecretManagerServiceClient.class, 
-            manager.getClient()
-        );
-    }
-
-    @Test
-    public void setClient_setsClient_whenClientIsExpired() throws IOException {
-        GoogleSecretManager spy = Mockito.spy(manager);
-
-        spy.setClient();
-        assertInstanceOf(
-            SecretManagerServiceClient.class, 
-            spy.getClient()
-        );
-        
-        doReturn(true).when(spy).isClientExpired();
-        spy.setClient();
-        
-        assertInstanceOf(
-            SecretManagerServiceClient.class,
-            spy.getClient()
-        );
-
-        assertNotEquals(
-            this.client,
-            spy.getClient(),
-            "Client after expiration should be set to a new client, but it wasn't."
-        );
-
-        try {
-            spy.getClient().close();
-        } catch (Exception e) {}
-    }
-
     @Test 
-    public void setClient_setsLastClientResetAt_toCurrentTime() throws InterruptedException {
-        LocalDateTime oldReset = this.manager.getLastClientResetAt();
-        
-        Thread.sleep(10);
-        this.manager.setLastClientResetAt();
-
-        LocalDateTime newReset = this.manager.getLastClientResetAt();
-        assertTrue(newReset.isAfter(oldReset));
-    }
-
-    @Test 
-    public void get_ifSecretNameMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() throws IOException, SecretNotFoundException {
+    public void get_ifSecretNameMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() throws SecretNotFoundException {
         String secretName = UUID.randomUUID().toString();
         Optional<String> version = Optional.empty();
 
@@ -125,16 +73,17 @@ public class GoogleSecretManagerTest {
         
         AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
         Mockito.when(client.accessSecretVersion(req)).thenReturn(resp);
-        doReturn(secretName).when(spy).parseAccessSecretResponse(resp, secretName);
+        SecretImpl parsedSecret = mock(SecretImpl.class);
+        doReturn(parsedSecret).when(spy).parseAccessSecretResponse(resp, secretName);
 
         assertEquals(
-            spy.get(secretName, version),
-            secretName
+            spy.getSecret(secretName, version),
+            parsedSecret
         );
     }
 
     @Test 
-    public void get_ifSecretNameAndVersionMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() throws IOException {
+    public void get_ifSecretNameAndVersionMatchesAnExistingSecret_ItReturnsTheValueOfThatSecret() {
         String secretName = UUID.randomUUID().toString();
         String rawSecret = "1";
         Optional<String> version = Optional.of(rawSecret);
@@ -156,11 +105,12 @@ public class GoogleSecretManagerTest {
 
         Mockito.when(payload.getData()).thenReturn(respStr);
         Mockito.when(respStr.toString()).thenReturn(secretName);
-        doReturn(secretName).when(spy).parseAccessSecretResponse(resp, secretName);
+        SecretImpl foundSecret = mock(SecretImpl.class);
+        doReturn(foundSecret).when(spy).parseAccessSecretResponse(resp, secretName);
 
         assertEquals(
-            spy.get(secretName, version),
-            secretName
+            spy.getSecret(secretName, version),
+            foundSecret
         );
     }
 
@@ -185,29 +135,30 @@ public class GoogleSecretManagerTest {
         ).thenReturn(secretId);
         doReturn(secret).when(spy).getBaseSecretTemplate();
         doReturn(payload).when(spy).getCreateSecretPayload(secretVal);
+        Mockito.doNothing().when(spy).addVersion(secretId, secretVal);
 
-        spy.create(secretId, secretVal);
+        spy.createSecret(secretId, secretVal);
 
         Mockito.verify(
             this.client, 
             Mockito.times(1)
         ).createSecret(
-            this.projectId,
+            "projects/" + this.projectId,
             secretId,
             secret
         );
 
         Mockito.verify(
-            this.client,
+            spy,
             Mockito.times(1)
-        ).addSecretVersion(
+        ).addVersion(
             secretId,
-            payload
+            secretVal
         );
     }
 
     @Test 
-    public void parseAccessSecretResponse_ifResponseHasPayload_itReturnsPayloadAsAString() {
+    public void parseAccessSecretResponse_ifResponseHasPayload_itReturnsASecretImplObject() {
         String secretName = UUID.randomUUID().toString();
         GoogleSecretManager spy = Mockito.spy(this.manager);
         AccessSecretVersionResponse resp = mock(AccessSecretVersionResponse.class);
@@ -217,15 +168,20 @@ public class GoogleSecretManagerTest {
         ByteString respStr = mock(ByteString.class);
 
         Mockito.when(payload.getData()).thenReturn(respStr);
-        Mockito.when(respStr.toString()).thenReturn(secretName);
+        Mockito.when(respStr.toStringUtf8()).thenReturn(secretName);
         Mockito.when(resp.hasPayload()).thenReturn(true);
+        Mockito.when(resp.getName()).thenReturn(secretName);
 
-        assertEquals(
-            spy.parseAccessSecretResponse(resp, secretName),
-            secretName
-        );
+        SecretImpl parsedSecret = spy.parseAccessSecretResponse(resp, secretName);
+
+        assertEquals(parsedSecret.getName(), secretName);
+        assertEquals(parsedSecret.getValue(), secretName);
     }
 
+    @Test 
+    public void disable_disablesTheProvidedSecretVersion() {
+
+    }
 
     @Test 
     public void parseAccessSecretResponse_ifResponseDoesntHavePayload_throwsSecretNotFoundException()  throws SecretNotFoundException {
@@ -256,93 +212,5 @@ public class GoogleSecretManagerTest {
 
         assertInstanceOf(SecretPayload.class, payload);
         assertEquals(payload.getData(), ByteString.copyFromUtf8(secret));
-    }
-
-    @Test 
-    public void createClient_ifCurrClientIsNotNull_itClosesTheClientBeforeSettingANewOne() throws IOException {
-        assertInstanceOf(
-            SecretManagerServiceClient.class, 
-            client
-        );
-
-        GoogleSecretManager spy = Mockito.spy(this.manager);
-
-        spy.createClient();
-
-        Mockito.verify(
-            spy, 
-            Mockito.times(1)
-        ).closeClient();
-    }
-
-    @Test 
-    public void isClientExpired_returnsTrue_whenClientIsShutdown() throws IOException {
-        Mockito.when(this.manager.getClient().isShutdown()).thenReturn(true);
-
-        assertTrue( 
-            this.manager.isClientExpired()
-        );
-    }
-
-    @Test 
-    public void isClientExpired_returnsFalse_whenClientIsNotShutdown() throws IOException {
-        Mockito.when(this.client.isShutdown()).thenReturn(false);
-
-        assertFalse(
-            this.manager.isClientExpired()
-        );
-    }
-
-    @Test 
-    public void isClientExpired_returnsTrue_clientHasBeenAliveLongerThanMaxClientLifeInMinutes() throws IOException {
-        Mockito.when(this.client.isShutdown()).thenReturn(false);
-
-        try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
-            mockedStatic.when(LocalDateTime::now).thenReturn(
-                this.manager.getLastClientResetAt().plus(
-                    this.manager.getMaxClientLifeInMinutes().plus(
-                        Duration.ofSeconds(1)
-                    )
-                )
-            );
-            
-            assertTrue(
-                this.manager.isClientExpired()
-            );
-        }
-    }
-
-    @Test 
-    public void isClientExpired_returnsTrue_clientHasBeenAliveAsLongAsMaxClientLifeInMinutes() throws IOException {
-        Mockito.when(this.client.isShutdown()).thenReturn(false);
-
-        try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
-            mockedStatic.when(LocalDateTime::now).thenReturn(
-                this.manager.getLastClientResetAt().plus(
-                    this.manager.getMaxClientLifeInMinutes()
-                )
-            );
-            
-            assertTrue(
-                this.manager.isClientExpired()
-            );
-        }
-    }
-
-    @Test 
-    public void isClientExpired_returnsFalse_clientHasBeenAliveLessThanMaxClientLifeInMinutes() throws IOException {
-        Mockito.when(this.client.isShutdown()).thenReturn(false);
-
-        try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
-            mockedStatic.when(LocalDateTime::now).thenReturn(
-                this.manager.getLastClientResetAt().plus(
-                    this.manager.getMaxClientLifeInMinutes().minus(Duration.ofSeconds(1))
-                )
-            );
-            
-            assertFalse(
-                this.manager.isClientExpired()
-            );
-        }
     }
 }
