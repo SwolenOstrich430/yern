@@ -1,6 +1,7 @@
 package com.yern.service.storage;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 public interface StorageProvider {
@@ -8,10 +9,10 @@ public interface StorageProvider {
     public void createFolder(String path);
     public List<String> listFolders(String folderPath);
     public void deleteFolder(String path);
-    public void uploadFile(String localPath, String targetPath);
-    public File downloadFile(String localPath, String targetPath);
+    public void uploadFile(Path localPath, String targetPath);
+    public void downloadFile(Path localPath, String targetPath);
     public void updateFile(String path);
     public void deleteFile(String path); 
     public void copyFile(String currentPath, String targetPath);
-    public void moveFile(String curreString, String targetPath);
+    public void moveFile(String currentPath, String targetPath);
 }
