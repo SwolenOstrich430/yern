@@ -19,7 +19,6 @@ import org.mockito.Mockito;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionRequest;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
-import com.google.cloud.secretmanager.v1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretName;
@@ -33,7 +32,6 @@ import com.google.protobuf.ByteString;
 import com.yern.service.secrets.SecretImpl;
 import com.yern.service.secrets.SecretNotFoundException;
 
-import lombok.experimental.UtilityClass; 
 
 public class GoogleSecretManagerTest {
     private GoogleSecretManager manager;
