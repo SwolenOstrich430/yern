@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.api.gax.rpc.AlreadyExistsException;
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionRequest;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.DeleteSecretRequest;
@@ -63,9 +64,13 @@ public class GoogleSecretManager implements SecretManager {
         AccessSecretVersionRequest req = getSecretAccessRequest(
             secretName, version
         );
-        AccessSecretVersionResponse resp = client.accessSecretVersion(req);
 
-        return parseAccessSecretResponse(resp, secretName); 
+        try {
+            AccessSecretVersionResponse resp = client.accessSecretVersion(req);
+            return parseAccessSecretResponse(resp, secretName); 
+        } catch(NotFoundException e) {
+            throw new SecretNotFoundException(secretName);
+        }
     }
 
     public void createSecret(String secretName, String secret) {
