@@ -37,14 +37,13 @@ Projects represent a pattern or patterns that a user is working on to produce on
 ### Projects
 | Name | Type | Primary Key | Foreign Key | Description | Notes 
 | -------- | ------- | -------- | ------- | -------- | -------- |  
-| id | $250 |
-| user_id | $80 |
-| name | $420 |
-| description | $420 |
-| start_date | $420 |
-| goal_end_date | $420 |
-| actual_end_date | $420 |
-| actual_end_date | $420 |
+| id | Bigint |
+| user_id | Bigint |
+| name | Text |
+| description | Text |
+| start_date | Timestamp |
+| goal_end_date | Timestamp |
+| actual_end_date | Timestamp |
 
 # Patterns
 ## Overview 
