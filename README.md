@@ -14,24 +14,117 @@ brew install postgres
 Follow the insturctions in *./cloud/gcp/auth/README.md*.
 
 
-## Definitions 
+# Definitions 
 
 * Panel: a section of a design. See also: piece(s), section, squares (granny square blankets).
 * Piece(s): either a garment of clothing in its entirety or a section of a design. 
 * Project: one or more pieces that a user is working on. See also: set. 
 * Section: synonmy for panel.
 * Set: A project with mulitple pieces.
-* Working in "The Round": creating a continuous piece that isn't sewn together from separate panels. 
+* Working in "The Round": creating a continuous piece that isn't sewn together from separate panels.  
 
-## Features 
+# Users
+## Registration 
+## Login
 
-### User Accounts 
+# Projects 
+## Overview 
+Projects represent a pattern or patterns that a user is working on to produce one or Pieces. I.e., they are the main/broadest container for users' work. 
 
-#### Registration 
+## Interface 
 
-#### Login
+## Schema
+### Projects
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| id | $250 |
+| user_id | $80 |
+| name | $420 |
+| description | $420 |
+| start_date | $420 |
+| goal_end_date | $420 |
+| actual_end_date | $420 |
+| actual_end_date | $420 |
 
-### Stitch Counter 
+# Patterns
+## Overview 
+Patterns are a set of files which describe how to create one or more pieces. Often, users will buy these from individual designers, and sometimes, they'll make them on their own. Pieces can be anything -- stuffed animals, blankets, garments, hats, etc.
+
+### Creation 
+Users should be able to upload supported file types (to start just PDFs) to their individual accounts. Files can come from a variety of sources: 
+* User's device 
+* Dropbox 
+* Google Drive
+
+### Access 
+To start, patterns will be private to each user. However, in the future, there could be extensions to make patterns public or viewable to a certain subset of users that the uploading user can determine. When implementing this, there should be special attention paid to patterns that users have paid for and uploaded. Determining the source may be difficult/not possible. And allowing these to be public could result in copyright issues. 
+
+### Edits 
+Other crochet/knitting apps provide pdf editors that users can make notes and highlights on. This could impact how files are stored. It would be ideal to create etags for each file/set of files and then reuse them for different users to save space. However, that may not be possible with privacy rules or how actual edits are saved to pdf documents. (Are they data saved separetly to the file and added on when users are viewing them, or are they direct edits to the file? Probably the latter.)
+
+### Sections 
+Patterns can be represented in a variety of ways. Some patterns may just be an individual piece that's a continuous stretch of material. Other individual pieces may have several different components that a user makes separarately and then combines later on. Other patterns may have multiple pieces that may be created in either of the two ways described above. 
+
+To a user, it would be convenient to have options for how they display each of their patterns. Smaller patterns could be represented as one, individual pdf, like so: 
+[Single Section Example](./one_section_pattern_example.png)
+
+While larger patterns can be shown in multiple sections: 
+[Pattern with Multiple Sections Example](./project_with_pattern_sections_example.png)
+
+And each section will have its own notes and pdf reader/editor:
+[Section Example](./pattern_section_example.png)
+
+
+### Schema
+#### Pattern
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| id | Bigint |
+| name | Text |
+| description | Text |
+| created_at | Timestamp
+| updated_at | Timestamp
+
+#### Sections 
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| id | Bigint | Yes | 
+| name | Text |
+| notes | Text |
+| sequence | Int |
+| file_id | Bigint | | Files.id |
+| file_start_page | Int
+| file_end_page | Int
+| created_at | Timestamp
+| updated_at | Timestamp
+
+#### Files
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| id | Bigint | yes
+| storage_provider_id | Bigint | | StorageProviders.id
+| raw_path | Text |
+| formatted_path | Text |
+| public_url | Text |
+| etag | Text |
+| error | Jsonb |
+| created_at | Timestamp
+| updated_at | Timestamp
+
+#### Patterns Sections 
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| pattern_id | Bigint | Yes | Patterns.Id
+| section_id | Bigint | Yes | Sections.Id
+| sequence | Int |
+
+#### Users Patterns 
+| Name | Type | Primary Key | Foreign Key | Description | Notes 
+| -------- | ------- | -------- | ------- | -------- | -------- |  
+| pattern_id | Bigint | Patterns.id
+| user_id | Bigint | Users.id
+
+#### Stitch Counter 
 
 #### Database 
 
