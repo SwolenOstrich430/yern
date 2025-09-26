@@ -120,8 +120,8 @@ And each section will have its own notes and pdf reader/editor:
 #### Users Patterns 
 | Name | Type | Primary Key | Foreign Key | Description | Notes 
 | -------- | ------- | -------- | ------- | -------- | -------- |  
-| pattern_id | Bigint | Patterns.id
-| user_id | Bigint | Users.id
+| pattern_id | Bigint | Yes | Patterns.id
+| user_id | Bigint | Yes | Users.id
 
 #### Stitch Counter 
 
