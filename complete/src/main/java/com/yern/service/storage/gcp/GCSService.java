@@ -3,14 +3,35 @@ package com.yern.service.storage.gcp;
 import java.io.File;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.yern.service.storage.BucketImpl;
 import com.yern.service.storage.CloudStorageProvider;
 
 public class GCSService implements CloudStorageProvider {
-     @Override
-    public void createBucket(String bucketName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createBucket'");
+    private Storage client;
+
+    public GCSService(
+        @Autowired Storage client
+    ) {
+        this.client = client; 
+    }
+
+    @Override
+    public BucketImpl createBucket(String bucketName) {
+        Bucket bucket = client.create(
+            getFormattedBucketName(bucketName)
+        )
+        ;
+        return BucketImpl.from(bucket);
+    }
+
+    public BucketInfo getFormattedBucketName(String bucketName) {
+        return BucketInfo.newBuilder(bucketName).build();
     }
 
     @Override
