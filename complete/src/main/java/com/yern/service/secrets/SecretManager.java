@@ -15,31 +15,49 @@ public interface SecretManager {
      * @param version The version of the secret. If the value is empty, the latest version will be returned.
      * @throws SecretNotFoundException If that secret is not found, a SecretNotFoundException is thrown.
     */
-    public String get(String secretName, Optional<String> version) throws SecretNotFoundException;
+    public SecretImpl getSecret(String secretName, Optional<String> version) throws SecretNotFoundException;
 
     /**
      * Creates a new secret not attached to any other, existing version.
      *
      * @param secretName The full name of the secret.
      * @param secret The actual value to be stored under the `secretName`
-     * @throws SecretAlreadyExistException If that secret already exists. 
+     * @throws SecretAlreadyExistsException If that secret already exists. 
     */
-    public void create(String secretName, String secret) throws SecretAlreadyExistException;
+    public void createSecret(String secretName, String secret) throws SecretAlreadyExistsException;
 
     /**
-     * Complete removes a secret based on the provided name.
+     * Removes a secret based on the provided name.
+     *
+     * @param secretName The full name of the secret.
+     * @throws RuntimeException If the secret cannot be deleted.
+    */
+    public void deleteSecret(String secretName);
+    
+      /**
+     * Removes a secret based on the provided name.
      *
      * @param secretName The full name of the secret.
      * @param version The version of the secret. If the value is empty, the latest version will be used.
      * @throws RuntimeException If the secret cannot be deleted.
     */
-    public void delete(String secretName, Optional<String> version) throws RuntimeException;
+    public void deleteVersion(String secretName, Optional<String> version);
     
     /**
      * Updates the supplied secret to a state that is no longer considered valid for production use.
      * 
      * @param secretName The full name of the secret.
-     * @throws SecretNotFoundException If the secret cannot be found.
+     * @param version The version of the secret. If the value is empty, the latest version will be used.
+     * @throws RuntimeException If the secret cannot be found.
     */
-    public void disable(String secretName);
+    public void disableVersion(String secretName, Optional<String> version);
+
+    /**
+     * Updates the supplied secret to a state that is valid for production use.
+     * 
+     * @param secretName The full name of the secret.
+     * @param version The version of the secret. If the value is empty, the latest version will be used.
+     * @throws RuntimeException If the secret cannot be found.
+    */
+    public void enableVersion(String secretName, Optional<String> version);
 }
