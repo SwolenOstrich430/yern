@@ -56,6 +56,19 @@ public class GCSServiceTests {
         assertInstanceOf(BucketImpl.class, returnVal);
         assertEquals(returnVal.getName(), bucketName);
     }
+
+    @Test 
+    public void deleteBucket_deletesTheProvidedBucket() {
+        when(client.get(bucketName)).thenReturn(bucket);
+
+        this.gcs.deleteBucket(bucketName);
+        
+        Mockito.verify(
+            bucket,
+            times(1)
+        )
+        .delete();
+    }
 }
 
 @FunctionalInterface

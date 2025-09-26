@@ -11,6 +11,8 @@ import com.google.cloud.storage.Storage;
 import com.yern.service.storage.BucketImpl;
 import com.yern.service.storage.CloudStorageProvider;
 
+// TODO: 
+// * exception handling for: createSecret, deleteSecret
 public class GCSService implements CloudStorageProvider {
     private Storage client;
 
@@ -42,9 +44,9 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void deleteBucket(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteBucket'");
+    public void deleteBucket(String bucketName) {
+        Bucket bucket = client.get(bucketName);
+        bucket.delete();
     }
 
     @Override
