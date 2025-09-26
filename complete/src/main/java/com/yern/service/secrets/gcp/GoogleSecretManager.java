@@ -79,23 +79,16 @@ public class GoogleSecretManager implements SecretManager {
     }
 
     public void deleteSecret(String secretName) {
-        SecretName formattedName = SecretName.of(projectId, secretName);
-
-        DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
-            .setName(formattedName.toString())
-            .build();
-
-        client.deleteSecret(request);
+        client.deleteSecret(
+            getDeleteSecretRequest(secretName)
+        );
     }
 
       // TODO: add unit tests
     public void addVersion(String secretName, String secret) {
-        SecretPayload payload = getCreateSecretPayload(secret);
-        SecretName formattedSecretName = SecretName.of(projectId, secretName);
-
         this.client.addSecretVersion(
-            formattedSecretName, 
-            payload
+            SecretName.of(projectId, secretName), 
+            getCreateSecretPayload(secret)
         );
     }
 
@@ -183,6 +176,12 @@ public class GoogleSecretManager implements SecretManager {
                     .setName(formattedVersion.toString())
                     .build();
 
+    }
+
+    public DeleteSecretRequest getDeleteSecretRequest(String secretName) {
+        return DeleteSecretRequest.newBuilder()
+            .setName(SecretName.of(projectId, secretName).toString())
+            .build();
     }
 }
 

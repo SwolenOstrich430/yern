@@ -1,4 +1,4 @@
-package com.yern.config;
+package com.yern.config.secrets;
 
 import java.io.IOException;
 
