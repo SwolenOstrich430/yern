@@ -1,0 +1,106 @@
+package com.yern.service.storage.gcp;
+
+import java.io.File;
+import java.util.List;
+
+import com.yern.service.storage.BucketImpl;
+import com.yern.service.storage.CloudStorageProvider;
+
+public class GCSService implements CloudStorageProvider {
+     @Override
+    public void createBucket(String bucketName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBucket'");
+    }
+
+    @Override
+    public List<String> listBuckets() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listBuckets'");
+    }
+
+    @Override
+    public BucketImpl getBucket(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBucket'");
+    }
+
+    @Override
+    public void deleteBucket(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBucket'");
+    }
+
+    @Override
+    public boolean bucketExists(String bucketName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'bucketExists'");
+    }
+
+    @Override
+    public boolean fileExists(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'fileExists'");
+    }
+
+    @Override
+    public void createFolder(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createFolder'");
+    }
+
+    @Override
+    public List<String> listFolders(String folderPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listFolders'");
+    }
+
+    @Override
+    public void deleteFolder(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteFolder'");
+    }
+
+    @Override
+    public void uploadFile(String localPath, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'uploadFile'");
+    }
+
+    @Override
+    public File downloadFile(String localPath, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'downloadFile'");
+    }
+
+    @Override
+    public void updateFile(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateFile'");
+    }
+
+    @Override
+    public void deleteFile(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteFile'");
+    }
+
+    @Override
+    public void copyFile(String currentPath, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'copyFile'");
+    }
+
+    @Override
+    public void moveFile(String curreString, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'moveFile'");
+    }
+
+    @Override
+    public String getFormattedFilePath(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getFormattedFilePath'");
+    }
+
+}
