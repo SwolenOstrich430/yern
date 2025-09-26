@@ -4,6 +4,9 @@ package com.yern.service.security.oauth.providers;
 import com.yern.dto.user.UserPostDto;
 import com.yern.model.user.User;
 import com.yern.repository.user.UserRepository;
+import com.yern.restservice.RestServiceApplication;
+import com.yern.service.cache.CacheService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +25,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = GoogleOauth2Service.class)
+@SpringBootTest(classes = RestServiceApplication.class)
 public class GoogleOauth2ServiceTests {
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private CacheService cacheService;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
@@ -52,13 +58,13 @@ public class GoogleOauth2ServiceTests {
     private String email;
     private String state;
 
-    @Autowired
     private GoogleOauth2Service googleOauth2Service;
 
     @BeforeEach()
     public void setup() {
         googleOauth2Service = new GoogleOauth2Service(
             userRepository,
+            cacheService,
             clientId,
             clientSecret,
             initiateUri,
