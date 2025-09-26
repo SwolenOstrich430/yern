@@ -95,7 +95,7 @@ public class GoogleSecretManagerIntegrationTest {
 
     @Test 
     @Order(4)
-    public void deleteAllSecrets() {
+    public void deleteAllSecretVersions() {
         for(Map.Entry<String, String>entry : secretsByNames.entrySet()) {
             assertDoesNotThrow(() -> {
                 this.manager.deleteSecret(entry.getKey());
