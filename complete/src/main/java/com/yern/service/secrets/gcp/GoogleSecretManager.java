@@ -1,25 +1,27 @@
 package com.yern.service.secrets.gcp;
 
-import java.io.IOException;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionRequest;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
+import com.google.cloud.secretmanager.v1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1.Replication;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.SecretName;
 import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.SecretVersion;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.google.cloud.secretmanager.v1.SecretVersion.State;
 import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.protobuf.ByteString;
-import com.yern.service.secrets.SecretAlreadyExistsException;
+import com.yern.service.secrets.SecretImpl;
 import com.yern.service.secrets.SecretManager;
 import com.yern.service.secrets.SecretNotFoundException;
 
@@ -30,9 +32,9 @@ import com.yern.service.secrets.SecretNotFoundException;
 @Service
 public class GoogleSecretManager implements SecretManager {
     private SecretManagerServiceClient client;
-    private final Duration maxClientLifeInMinutes;
-    private LocalDateTime lastClientResetAt;
     private final String projectId;
+    // TODO: move to util method 
+    private final String fullProjectId;
     private final String latestVersionAlias;
 
     public GoogleSecretManager(
@@ -42,39 +44,22 @@ public class GoogleSecretManager implements SecretManager {
         String latestVersionAlias,
         @Autowired 
         SecretManagerServiceClient client
-    ) throws IOException {
-        this.maxClientLifeInMinutes = maxClientLifeInMinutes;
-        // TODO: move this into a util method 
+    ) {
+        // TODO: move this into a util method/class  
         this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
+        this.fullProjectId = "projects/" + this.projectId;
         this.latestVersionAlias = latestVersionAlias;
-        this.setClient(client);
-    }
-
-    /**
-     * Spring should now be managing this? 
-     */
-    public final void setClient() throws IOException {
-        if ((this.client == null) || this.isClientExpired()) {
-            this.setLastClientResetAt();
-            this.client = this.createClient();
-        }
-    }
-
-    public final void setClient(SecretManagerServiceClient newClient) {
-        this.client = newClient;
-        this.setLastClientResetAt();
+        this.client = client;
     }
 
     public SecretManagerServiceClient getClient() {
         return client;
     }
 
-    public String get(
+    public SecretImpl getSecret(
         String secretName, 
         Optional<String> version
-     ) throws IOException, SecretNotFoundException {
-        setClient();
-
+     ) throws SecretNotFoundException {
         AccessSecretVersionRequest req = getSecretAccessRequest(
             secretName, version
         );
@@ -83,32 +68,66 @@ public class GoogleSecretManager implements SecretManager {
         return parseAccessSecretResponse(resp, secretName); 
     }
 
-    public void create(String secretName, String secret) throws IOException, SecretAlreadyExistsException {
-        setClient();
-
+    public void createSecret(String secretName, String secret) {
         Secret baseSecret = this.getBaseSecretTemplate();
-        Secret createdSecret = this.client.createSecret(
-            this.projectId, secretName, baseSecret
-        );
 
+        try {
+            this.client.createSecret(this.fullProjectId, secretName, baseSecret);
+        } catch (AlreadyExistsException e) {}
+        
+        this.addVersion(secretName, secret);
+    }
+
+    public void deleteSecret(String secretName) {
+        SecretName formattedName = SecretName.of(projectId, secretName);
+
+        DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+            .setName(formattedName.toString())
+            .build();
+
+        client.deleteSecret(request);
+    }
+
+      // TODO: add unit tests
+    public void addVersion(String secretName, String secret) {
         SecretPayload payload = getCreateSecretPayload(secret);
+        SecretName formattedSecretName = SecretName.of(projectId, secretName);
 
         this.client.addSecretVersion(
-            createdSecret.getName(), 
+            formattedSecretName, 
             payload
         );
     }
 
-    public void delete(String secretName, Optional<String> version) throws RuntimeException {
+    public void deleteVersion(String secretName, Optional<String> version) throws RuntimeException {
+        SecretVersionName secretVersionName = SecretVersionName.of(
+            this.projectId, secretName, version.orElse(this.latestVersionAlias)
+        );
 
+        SecretVersion disabledVersion = client.destroySecretVersion(secretVersionName);
+        assert(disabledVersion.getState() == State.DESTROYED);
     }
 
-    public void disable(String secretName) throws RuntimeException {
+    public void disableVersion(String secretName, Optional<String> version) throws RuntimeException {
+        SecretVersionName secretVersionName = SecretVersionName.of(
+            this.projectId, secretName, version.orElse(this.latestVersionAlias)
+        );
 
+        SecretVersion disabledVersion = client.disableSecretVersion(secretVersionName);
+        assert(disabledVersion.getState() == State.DISABLED);
+    }
+
+    public void enableVersion(String secretName, Optional<String> version) throws RuntimeException {
+        SecretVersionName secretVersionName = SecretVersionName.of(
+            this.projectId, secretName, version.orElse(this.latestVersionAlias)
+        );
+
+        SecretVersion disabledVersion = client.enableSecretVersion(secretVersionName);
+        assert(disabledVersion.getState() == State.ENABLED);
     }
 
     // TODO: figure out how serializing fits into this
-    public String parseAccessSecretResponse(
+    public SecretImpl parseAccessSecretResponse(
         AccessSecretVersionResponse response,
         String secretName
     ) {
@@ -116,7 +135,14 @@ public class GoogleSecretManager implements SecretManager {
             throw new SecretNotFoundException(secretName);
         }
 
-        return response.getPayload().getData().toString();
+        String[] versionSegments = response.getName().split("/");
+
+        return new SecretImpl(
+            secretName, 
+            response.getPayload().getData().toStringUtf8(), 
+            versionSegments[versionSegments.length - 1],
+            response.getName()
+        );
     }
 
     public Secret getBaseSecretTemplate() {
@@ -157,63 +183,6 @@ public class GoogleSecretManager implements SecretManager {
                     .setName(formattedVersion.toString())
                     .build();
 
-    }
-
-    public SecretManagerServiceClient createClient() throws IOException {
-        if (this.client != null) {
-            this.closeClient();
-        }
-
-        return SecretManagerServiceClient.create();
-    }
-
-    public void closeClient() {
-        if (client == null) {
-            return;
-        }
-
-        try {
-            if (!client.awaitTermination(2, TimeUnit.SECONDS)) {
-                client.close();
-            }
-        } catch (Exception exception) {
-            client.close(); 
-        }
-    }
-
-    public boolean isClientExpired() {        
-        return (
-            this.client.isShutdown() || 
-            this.hasClientReachedTtl()
-        );
-    }
-
-    public boolean hasClientReachedTtl() {
-        if (!(this.lastClientResetAt instanceof LocalDateTime) || (this.lastClientResetAt == null)) {
-            return false;
-        }
-
-        LocalDateTime currTime = LocalDateTime.now();
-        LocalDateTime expiry = this.lastClientResetAt.plus(
-            this.maxClientLifeInMinutes
-        );
-
-        // TODO: check if >= exists?
-        return (
-            currTime.isAfter(expiry) || currTime.isEqual(expiry)
-        );
-    }
-
-    public Duration getMaxClientLifeInMinutes() {
-        return this.maxClientLifeInMinutes;
-    }
-
-    public LocalDateTime getLastClientResetAt() {
-        return this.lastClientResetAt;
-    }
-
-    public final void setLastClientResetAt() {
-        this.lastClientResetAt = LocalDateTime.now();
     }
 }
 
