@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 import com.yern.service.storage.BucketImpl;
 import com.yern.service.storage.CloudStorageProvider;
 
@@ -28,10 +27,6 @@ public class GCSService implements CloudStorageProvider {
         )
         ;
         return BucketImpl.from(bucket);
-    }
-
-    public BucketInfo getFormattedBucketName(String bucketName) {
-        return BucketInfo.newBuilder(bucketName).build();
     }
 
     @Override
@@ -124,4 +119,7 @@ public class GCSService implements CloudStorageProvider {
         throw new UnsupportedOperationException("Unimplemented method 'getFormattedFilePath'");
     }
 
+    public BucketInfo getFormattedBucketName(String bucketName) {
+        return BucketInfo.newBuilder(bucketName).build();
+    }
 }

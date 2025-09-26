@@ -41,16 +41,20 @@ public class GCSServiceTests {
         when(bucket.getName()).thenReturn(bucketName);
 
         BucketImpl returnVal = this.spy.createBucket(bucketName);
-        assertEquals(returnVal.getName(), bucketName);
-
         verify(this.client, times(1)).create(bucketInfo);
     }
 
+    @Test 
     public void createBucket_returnsTheCreatedBucketAsABucketImplObject() {
         BucketInfo bucketInfo = mock(BucketInfo.class);
         
         doReturn(bucketInfo).when(this.spy).getFormattedBucketName(bucketName);
         when(this.client.create(bucketInfo)).thenReturn(bucket);
+        when(bucket.getName()).thenReturn(bucketName);
+
+        BucketImpl returnVal = this.spy.createBucket(bucketName);
+        assertInstanceOf(BucketImpl.class, returnVal);
+        assertEquals(returnVal.getName(), bucketName);
     }
 }
 
