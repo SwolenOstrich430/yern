@@ -33,10 +33,7 @@ import com.yern.service.cache.CacheService;
 public final class GoogleOauth2Service implements Oauth2Service {
     public static String IDENTIFIER = "google";
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired 
     private CacheService cacheService;
 
     private String clientId;
@@ -53,7 +50,10 @@ public final class GoogleOauth2Service implements Oauth2Service {
 
     // TODO: move this into a config class
     public GoogleOauth2Service(
+        @Autowired 
         UserRepository userRepository,
+        @Autowired 
+        CacheService cacheService,
         @Value("${spring.security.oauth2.client.registration.google.client-id}") String clientId,
         @Value("${spring.security.oauth2.client.registration.google.client-secret}") String clientSecret,
         @Value("${api.external.oauth2.google.config.endpoints.initiate-uri}") String initiateUri,
@@ -67,6 +67,7 @@ public final class GoogleOauth2Service implements Oauth2Service {
         @Value("${api.base-url}") String baseUrl
     ) {
         this.userRepository = userRepository;
+        this.cacheService = cacheService;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.initiateUri = initiateUri;
