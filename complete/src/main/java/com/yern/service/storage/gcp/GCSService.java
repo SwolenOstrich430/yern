@@ -1,10 +1,14 @@
 package com.yern.service.storage.gcp;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
@@ -80,15 +84,37 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void uploadFile(String localPath, String targetPath) {
+    public void uploadFile(Path localPath, String targetPath) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'uploadFile'");
     }
 
     @Override
-    public File downloadFile(String localPath, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'downloadFile'");
+    public void downloadFile(Path localPath, String targetPath) {
+        this.client.downloadTo(
+            getBlobIdFromPath(targetPath), 
+            localPath
+        );
+    }
+
+    public BlobId getBlobIdFromPath(String path) {
+        return BlobId.of(
+            getBucketNameFromPath(path), 
+            getFileNameFromPath(path)
+        );
+    }
+
+    private String getBucketNameFromPath(String path) {
+        return path.split("/")[0];
+    }
+
+    private String getFileNameFromPath(String path) {
+        String[] splitPath = 
+            Arrays.stream(path.split("/"))
+                    .skip(1)
+                    .toArray(String[]::new);
+        
+        return String.join("/", splitPath);
     }
 
     @Override

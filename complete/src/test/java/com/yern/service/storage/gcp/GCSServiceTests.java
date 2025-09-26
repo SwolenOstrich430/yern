@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Executable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,23 +15,32 @@ import org.mockito.Mockito;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.yern.service.storage.BucketImpl;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 
 public class GCSServiceTests {
     private Storage client;
     private GCSService gcs;
     private GCSService spy;
-    private final String bucketName = UUID.randomUUID().toString();
     private Bucket bucket;
     private BucketImpl bucketImpl;
+    private BlobId blobId;
+
+    private final String bucketName = UUID.randomUUID().toString();
+    private final String fileName = UUID.randomUUID().toString();
+    private final String folder = UUID.randomUUID().toString();
+    private final String fullPath = bucketName + "/" + folder + "/" + fileName;
+    private final Path localPath = Mockito.mock(Path.class);
 
     @BeforeEach 
     public void setup() {
+        Paths.get("");
         this.client = Mockito.mock(Storage.class);
         this.gcs = new GCSService(this.client);
         this.spy = Mockito.spy(this.gcs);
         this.bucket = Mockito.mock(Bucket.class);
         this.bucketImpl = Mockito.mock(BucketImpl.class);
+        this.blobId = Mockito.mock(BlobId.class);
     }
 
     @Test
@@ -62,12 +73,26 @@ public class GCSServiceTests {
         when(client.get(bucketName)).thenReturn(bucket);
 
         this.gcs.deleteBucket(bucketName);
-        
+
         Mockito.verify(
             bucket,
             times(1)
         )
         .delete();
+    }
+
+    @Test 
+    public void downloadFile_downloadsTheProvidedTargetFile_toTheLocalPath() {
+        doReturn(this.blobId).when(this.spy).getBlobIdFromPath(fullPath);
+        doNothing().when(this.client).downloadTo(blobId, localPath);
+
+        this.spy.downloadFile(localPath, fullPath);
+
+        Mockito.verify(
+            this.client,
+            times(1)
+        )
+        .downloadTo(blobId, localPath);
     }
 }
 
