@@ -8,6 +8,7 @@ import com.google.cloud.storage.Bucket;
 import lombok.Getter;
 
 // TODO: this should probably be moved to a factory 
+// TODO: add a provider enum 
 public class BucketImpl {
     private String name;
 
