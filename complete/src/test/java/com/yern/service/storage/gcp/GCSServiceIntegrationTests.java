@@ -2,9 +2,12 @@ package com.yern.service.storage.gcp;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -75,10 +78,52 @@ public class GCSServiceIntegrationTests {
             BucketImpl matchingBucket = service.getBucket(foundBucket.getName());
             assertEquals(matchingBucket, foundBucket);
 
-            if (!(foundBucket.getName().equals(bucketName))) {
-                service.deleteBucket(foundBucket.getName());
-                assertFalse(service.bucketExists(foundBucket.getName()));
-            }
+            service.deleteBucket(foundBucket.getName());
+            assertFalse(service.bucketExists(foundBucket.getName()));
         }
+    }
+
+    // TODO: add tests for verifying content on download 
+    @Test
+    @Order(2)
+    public void crudFiles() throws IOException {
+        service.createBucket(bucketName);
+        assertTrue(service.bucketExists(bucketName));
+
+        String fileName = UUID.randomUUID().toString();
+        File file = new File(fileName); 
+        Path localPath = Path.of(file.getPath());
+        file.createNewFile();
+        assert(file.exists());
+
+        String cloudPath = bucketName + "/" + file.getName();
+        assertFalse(service.fileExists(cloudPath));
+        service.uploadFile(localPath, cloudPath);
+        assertTrue(service.fileExists(cloudPath));
+
+        file.delete();
+        assertFalse(file.exists());
+        File newFile = localPath.toFile();
+        assertFalse(newFile.exists());
+
+        service.downloadFile(localPath, cloudPath);
+        assertTrue(newFile.exists());
+
+        newFile.delete();
+        assertFalse(newFile.exists());
+
+        String newCloudFile = bucketName + "/" + UUID.randomUUID().toString();
+        assertFalse(service.fileExists(newCloudFile));
+        service.copyFile(cloudPath, newCloudFile);
+        assertTrue(service.fileExists(newCloudFile));
+
+        service.deleteFile(cloudPath);
+        assertFalse(service.fileExists(cloudPath));
+        service.moveFile(newCloudFile, cloudPath);
+        assertFalse(service.fileExists(newCloudFile));
+        assertTrue(service.fileExists(cloudPath));
+
+        service.deleteFile(cloudPath);
+        assertFalse(service.fileExists(cloudPath));
     }
 }
