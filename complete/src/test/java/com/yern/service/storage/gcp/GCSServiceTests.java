@@ -146,4 +146,17 @@ public class GCSServiceTests {
         )
         .list(eq(bucketName), any());
     }
+
+    @Test 
+    public void deleteFile_doesNotError_ifFileIsDeleted() {
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+
+        assertDoesNotThrow(() -> spy.deleteFile(fullPath));
+        
+        verify(
+            client, 
+            times(1)
+        )
+        .delete(blobId);
+    }
 }

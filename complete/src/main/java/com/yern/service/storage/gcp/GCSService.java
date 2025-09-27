@@ -122,6 +122,33 @@ public class GCSService implements CloudStorageProvider {
         return blobs.streamAll().map(Blob::getName).toList();
     }
 
+    @Override
+    public void updateFile(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateFile'");
+    }
+
+    @Override
+    public void deleteFile(String path) {
+        BlobId blobId = getBlobIdFromPath(path);
+        
+        if (!(client.delete(blobId))) {
+            // throw new FileNotDeletedException();
+        }
+    }
+
+    @Override
+    public void copyFile(String currentPath, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'copyFile'");
+    }
+
+    @Override
+    public void moveFile(String curreString, String targetPath) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'moveFile'");
+    }
+
     public BlobId getBlobIdFromPath(String path) {
         return BlobId.of(
             getBucketNameFromPath(path), 
@@ -140,30 +167,6 @@ public class GCSService implements CloudStorageProvider {
                     .toArray(String[]::new);
         
         return String.join("/", splitPath);
-    }
-
-    @Override
-    public void updateFile(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateFile'");
-    }
-
-    @Override
-    public void deleteFile(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteFile'");
-    }
-
-    @Override
-    public void copyFile(String currentPath, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'copyFile'");
-    }
-
-    @Override
-    public void moveFile(String curreString, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'moveFile'");
     }
 
     @Override
