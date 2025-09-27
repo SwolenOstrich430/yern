@@ -106,7 +106,7 @@ Table sections {
 ref: sections.pattern_id > patterns.id
 
 Table files {
-  id bigint 
+  id bigint [pk, increment]
   storage_provider_id bigint [not null]
   raw_path text [not null]
   formatted_path text [not null]
@@ -117,6 +117,12 @@ Table files {
   updated_at timestamp [not null, default: "now()"]
 }
 ref: files.storage_provider_id > service_providers.id
+
+Table service_providers {
+  id bigint [pk, increment]
+  name text [not null]
+  type enum [not null]
+}
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
