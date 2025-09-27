@@ -14,6 +14,7 @@
 	<name>rest-service-complete</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
+        <spring-cloud-gcp.version>7.3.1</spring-cloud-gcp.version> 
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
@@ -114,10 +115,15 @@
             <artifactId>mapstruct</artifactId>
             <version>1.6.0.Beta1</version> 
         </dependency>
-          <dependency>
+        <dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>spring-cloud-gcp-storage</artifactId>
+            <version>${spring-cloud-gcp.version}</version>
+		</dependency>
+        <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
-            <version>7.3.1</version>
+            <version>${spring-cloud-gcp.version}</version>
         </dependency>
     </dependencies>
 	<build>

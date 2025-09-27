@@ -33,7 +33,7 @@ public class GoogleSecretManagerIntegrationTest {
     private Duration maxClientLifeInMinutes;
     @Value("${secrets.google.latest-version-alias}")
     private String latestVersionAlias;
-     private GoogleSecretManager manager;
+    private GoogleSecretManager manager;
     private HashMap<String, String> secretsByNames;
 
 
