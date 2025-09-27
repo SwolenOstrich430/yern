@@ -1,8 +1,10 @@
 package com.yern.service.storage.gcp;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.lang.reflect.Executable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +12,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.google.api.gax.paging.Page;
@@ -22,6 +25,8 @@ import com.yern.service.storage.BucketImpl;
 import io.grpc.internal.Stream;
 
 import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.BlobInfo.Builder;
 import com.google.cloud.storage.Bucket;
 
 public class GCSServiceTests {
@@ -102,6 +107,29 @@ public class GCSServiceTests {
     }
 
     @Test 
+    public void uploadFile_createsAFileInGCS_basedOnFileAtLocalPath() throws IOException {
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        Builder builder = mock(Builder.class);
+        BlobInfo blobInfo = mock(BlobInfo.class);
+
+        try (MockedStatic<BlobInfo> mockedStatic = Mockito.mockStatic(BlobInfo.class)) {
+            mockedStatic.when(
+                () -> BlobInfo.newBuilder(any())
+            ).thenReturn(builder);
+            when(builder.build()).thenReturn(blobInfo);
+            
+            this.spy.uploadFile(localPath, fullPath);
+
+            verify(
+                client, 
+                times(1)
+            )
+            .createFrom(blobInfo, localPath);
+        }
+
+    }
+
+    @Test 
     public void listFiles_returnsAListOfFilePaths_underTheProvidedFolder() {
         Page<Blob> blobs = mock(Page.class);
         
@@ -111,7 +139,7 @@ public class GCSServiceTests {
         .thenReturn(blobs);
 
         this.spy.listFiles(fullPath);
-        
+
         verify(
             this.client, 
             times(1)

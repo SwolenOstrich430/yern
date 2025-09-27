@@ -1,6 +1,7 @@
 package com.yern.service.storage.gcp;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
@@ -89,9 +91,17 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void uploadFile(Path localPath, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'uploadFile'");
+    public void uploadFile(
+        Path localPath, 
+        String targetPath
+    ) throws IOException {
+        BlobId blobId = getBlobIdFromPath(targetPath);
+
+        this.client.createFrom(
+            BlobInfo.newBuilder(blobId).build(), 
+            localPath
+        );
+
     }
 
     @Override
