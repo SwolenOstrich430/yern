@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Executable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +24,6 @@ import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.yern.service.storage.BucketImpl;
-
-import io.grpc.internal.Stream;
 
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -77,6 +78,39 @@ public class GCSServiceTests {
         BucketImpl returnVal = this.spy.createBucket(bucketName);
         assertInstanceOf(BucketImpl.class, returnVal);
         assertEquals(returnVal.getName(), bucketName);
+    }
+
+    @Test 
+    public void getBucket_returnsABucketImpl_fromTheFoundBucket() {
+        try (MockedStatic<BucketImpl> mockedStatic = Mockito.mockStatic(BucketImpl.class)) {
+            when(client.get(bucketName)).thenReturn(bucket);
+            mockedStatic.when(() -> BucketImpl.from(bucket)).thenReturn(bucketImpl);
+
+            BucketImpl foundBucket = spy.getBucket(bucketName);
+
+            assertEquals(foundBucket, bucketImpl);
+        }
+    }
+
+    @Test 
+    public void listBuckets_returnsAListOfBucketImpl() {
+        Page<Bucket> buckets = mock(Page.class);
+        
+        when(
+            this.client.list()
+        )
+        .thenReturn(buckets);
+
+        List<BucketImpl> foundBuckets = this.spy.listBuckets();
+        for (BucketImpl currBucket : foundBuckets) {
+            assertInstanceOf(BucketImpl.class, currBucket);
+        }
+
+        verify(
+            this.client, 
+            times(1)
+        )
+        .list();
     }
 
     @Test 
@@ -150,8 +184,26 @@ public class GCSServiceTests {
     @Test 
     public void deleteFile_doesNotError_ifFileIsDeleted() {
         doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.delete(blobId)).thenReturn(true);
 
         assertDoesNotThrow(() -> spy.deleteFile(fullPath));
+        
+        verify(
+            client, 
+            times(1)
+        )
+        .delete(blobId);
+    }
+
+    @Test 
+    public void deleteFile_doesErrors_ifFileIsNotDeleted() {
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.delete(blobId)).thenReturn(false);
+
+        assertThrows(
+            FileNotFoundException.class,
+            () -> spy.deleteFile(fullPath)
+        );
         
         verify(
             client, 

@@ -1,6 +1,7 @@
 package com.yern.service.storage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,7 +15,7 @@ public interface StorageProvider {
     public void uploadFile(Path localPath, String targetPath) throws IOException;
     public void downloadFile(Path localPath, String targetPath);
     public void updateFile(String path);
-    public void deleteFile(String path); 
+    public void deleteFile(String path) throws FileNotFoundException, FileNotFoundException; 
     public void copyFile(String currentPath, String targetPath);
     public void moveFile(String currentPath, String targetPath);
 }

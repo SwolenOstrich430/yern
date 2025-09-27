@@ -1,6 +1,7 @@
 package com.yern.service.storage.gcp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,8 +22,10 @@ import com.google.common.collect.Streams;
 import com.yern.service.storage.BucketImpl;
 import com.yern.service.storage.CloudStorageProvider;
 
+
 // TODO: 
 // * exception handling for: createSecret, deleteSecret
+// * add other methods as needed 
 public class GCSService implements CloudStorageProvider {
     private Storage client;
 
@@ -42,16 +45,16 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public List<String> listBuckets() {
-   
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listBuckets'");
+    public List<BucketImpl> listBuckets() {
+        return client.list()
+                    .streamAll()
+                    .map(bucket -> BucketImpl.from(bucket))
+                    .toList();
     }
 
     @Override
-    public BucketImpl getBucket(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getBucket'");
+    public BucketImpl getBucket(String bucketName) {
+        return BucketImpl.from(client.get(bucketName));
     }
 
     @Override
@@ -129,11 +132,11 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void deleteFile(String path) {
+    public void deleteFile(String path) throws FileNotFoundException {
         BlobId blobId = getBlobIdFromPath(path);
         
         if (!(client.delete(blobId))) {
-            // throw new FileNotDeletedException();
+            throw new FileNotFoundException(path);
         }
     }
 
