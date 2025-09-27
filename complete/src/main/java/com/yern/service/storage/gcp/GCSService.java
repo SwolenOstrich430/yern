@@ -23,6 +23,7 @@ import com.yern.service.storage.CloudStorageProvider;
 // TODO: 
 // * exception handling for: createSecret, deleteSecret
 // * add other methods as needed 
+// * add docs (https://github.com/googleapis/java-storage?tab=readme-ov-file)
 public class GCSService implements CloudStorageProvider {
     private Storage client;
 
@@ -62,8 +63,11 @@ public class GCSService implements CloudStorageProvider {
 
     @Override
     public boolean bucketExists(String bucketName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'bucketExists'");
+        Bucket bucket = client.get(bucketName);
+
+        return (
+            bucket != null && bucket.exists()
+        );
     }
 
     @Override

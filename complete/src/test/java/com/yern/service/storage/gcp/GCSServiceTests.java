@@ -61,6 +61,8 @@ public class GCSServiceTests {
         when(this.client.create(bucketInfo)).thenReturn(bucket);
         when(bucket.getName()).thenReturn(bucketName);
 
+        this.spy.createBucket(bucketName);
+        
         verify(this.client, times(1)).create(bucketInfo);
     }
 
@@ -121,6 +123,28 @@ public class GCSServiceTests {
             times(1)
         )
         .delete();
+    }
+
+    @Test 
+    public void bucketExists_returnsTrue_whenClientGetReturnsABucketThatExists() {
+        when(client.get(bucketName)).thenReturn(bucket);
+        when(bucket.exists()).thenReturn(true);
+
+        assertTrue(gcs.bucketExists(bucketName));
+    }
+
+    @Test 
+    public void bucketExists_returnsTrue_whenClientGetReturnsABucketThatDoesNotExists() {
+        when(client.get(bucketName)).thenReturn(bucket);
+        when(bucket.exists()).thenReturn(false);
+
+        assertFalse(gcs.bucketExists(bucketName));
+    }
+
+    @Test 
+    public void bucketExists_returnsTrue_whenClientGetReturnsNull() {
+        when(client.get(bucketName)).thenReturn(null);
+        assertFalse(gcs.bucketExists(bucketName));
     }
 
     @Test 
