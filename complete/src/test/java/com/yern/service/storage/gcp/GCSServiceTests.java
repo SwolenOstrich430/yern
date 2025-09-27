@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -22,7 +23,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.Storage.BlobListOption;
 import com.yern.service.storage.BucketImpl;
 
 import com.google.cloud.storage.BlobId;
@@ -221,9 +221,61 @@ public class GCSServiceTests {
         doReturn(targetFileId).when(spy).getBlobIdFromPath(targetPath);
         doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
         when(client.get(blobId)).thenReturn(blob);
+        doReturn(true).when(spy).fileExists(targetPath);
 
         spy.copyFile(fullPath, targetPath);
 
         verify(blob, times(1)).copyTo(targetFileId);
+    }
+
+    @Test 
+    public void moveFile_copiesTheCurrentFileToTarget_andDeletesTheCurrentFile() throws IOException {
+        String targetPath = UUID.randomUUID().toString();
+        doNothing().when(spy).copyFile(targetPath, fullPath);
+        doNothing().when(spy).deleteFile(targetPath);
+        InOrder inOrder = inOrder(spy, spy);
+
+        spy.moveFile(targetPath, fullPath);
+
+        inOrder.verify(
+            spy, times(1)
+        )
+        .copyFile(targetPath, fullPath);
+
+        inOrder.verify(
+            spy, 
+            times(1)
+        )
+        .deleteFile(targetPath);
+    }
+
+    @Test 
+    public void fileExists_returnsTrue_whenGetFileIsNotNullAndExists() {
+        Blob blob = mock(Blob.class);
+        
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.get(blobId)).thenReturn(blob);
+        when(blob.exists()).thenReturn(true);
+
+        assertTrue(spy.fileExists(fullPath));
+    }
+
+    @Test 
+    public void fileExists_returnsFalse_whenGetFileIsNull() {
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.get(blobId)).thenReturn(null);
+
+        assertFalse(spy.fileExists(fullPath));
+    }
+
+    @Test 
+    public void fileExists_returnsFalse_whenGetFileIsNotNulButDoesntExist() {
+        Blob blob = mock(Blob.class);
+        
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.get(blobId)).thenReturn(blob);
+        when(blob.exists()).thenReturn(false);
+
+        assertFalse(spy.fileExists(fullPath));
     }
 }

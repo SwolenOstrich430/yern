@@ -143,18 +143,24 @@ public class GCSService implements CloudStorageProvider {
         }
 
         currFile.copyTo(targetFileId);
+        assert(fileExists(targetPath));
     }
 
     @Override
-    public void moveFile(String curreString, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'moveFile'");
+    public void moveFile(String currentPath, String targetPath) throws IOException {
+        copyFile(currentPath, targetPath);
+        deleteFile(currentPath);
     }
 
     @Override
     public boolean fileExists(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'fileExists'");
+        Blob file = client.get(
+            getBlobIdFromPath(path)
+        );
+
+        return (
+            file != null && file.exists()
+        );
     }
 
 

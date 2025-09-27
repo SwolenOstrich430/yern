@@ -16,5 +16,5 @@ public interface StorageProvider {
     public void updateFile(Path localPath, String targetPath) throws IOException;
     public void deleteFile(String path) throws FileNotFoundException, FileNotFoundException; 
     public void copyFile(String currentPath, String targetPath) throws FileNotFoundException;
-    public void moveFile(String currentPath, String targetPath);
+    public void moveFile(String currentPath, String targetPath) throws IOException;
 }
