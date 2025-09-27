@@ -109,6 +109,7 @@ public class GCSService implements CloudStorageProvider {
         );
     }
 
+    // TODO: add test for empty list return (mostly to document)
     @Override 
     public List<String> listFiles(String path) {
         Page<Blob> blobs = client.list(
