@@ -8,10 +8,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.api.gax.paging.Page;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.BlobListOption;
+import com.google.common.collect.Streams;
 import com.yern.service.storage.BucketImpl;
 import com.yern.service.storage.CloudStorageProvider;
 
@@ -37,6 +41,7 @@ public class GCSService implements CloudStorageProvider {
 
     @Override
     public List<String> listBuckets() {
+   
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'listBuckets'");
     }
@@ -95,6 +100,16 @@ public class GCSService implements CloudStorageProvider {
             getBlobIdFromPath(targetPath), 
             localPath
         );
+    }
+
+    @Override 
+    public List<String> listFiles(String path) {
+        Page<Blob> blobs = client.list(
+            getBucketNameFromPath(path),
+            BlobListOption.prefix(getFileNameFromPath(path))
+        );
+
+        return blobs.streamAll().map(Blob::getName).toList();
     }
 
     public BlobId getBlobIdFromPath(String path) {

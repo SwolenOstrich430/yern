@@ -12,9 +12,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.google.api.gax.paging.Page;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.BlobListOption;
 import com.yern.service.storage.BucketImpl;
+
+import io.grpc.internal.Stream;
+
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 
@@ -94,9 +100,22 @@ public class GCSServiceTests {
         )
         .downloadTo(blobId, localPath);
     }
-}
 
-@FunctionalInterface
-interface StaticMockContext {
-    void execute(String message);
+    @Test 
+    public void listFiles_returnsAListOfFilePaths_underTheProvidedFolder() {
+        Page<Blob> blobs = mock(Page.class);
+        
+        when(
+            this.client.list(eq(bucketName), any())
+        )
+        .thenReturn(blobs);
+
+        this.spy.listFiles(fullPath);
+        
+        verify(
+            this.client, 
+            times(1)
+        )
+        .list(eq(bucketName), any());
+    }
 }

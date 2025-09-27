@@ -9,6 +9,7 @@ public interface StorageProvider {
     public void createFolder(String path);
     public List<String> listFolders(String folderPath);
     public void deleteFolder(String path);
+    public List<String> listFiles(String path);
     public void uploadFile(Path localPath, String targetPath);
     public void downloadFile(Path localPath, String targetPath);
     public void updateFile(String path);
