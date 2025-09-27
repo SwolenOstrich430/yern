@@ -110,13 +110,6 @@ And each section will have its own notes and pdf reader/editor:
 | created_at | Timestamp
 | updated_at | Timestamp
 
-#### Patterns Sections 
-| Name | Type | Primary Key | Foreign Key | Description | Notes 
-| -------- | ------- | -------- | ------- | -------- | -------- |  
-| pattern_id | Bigint | Yes | Patterns.Id
-| section_id | Bigint | Yes | Sections.Id
-| sequence | Int |
-
 #### Users Patterns 
 | Name | Type | Primary Key | Foreign Key | Description | Notes 
 | -------- | ------- | -------- | ------- | -------- | -------- |  
