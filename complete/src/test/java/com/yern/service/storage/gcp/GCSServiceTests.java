@@ -61,7 +61,6 @@ public class GCSServiceTests {
         when(this.client.create(bucketInfo)).thenReturn(bucket);
         when(bucket.getName()).thenReturn(bucketName);
 
-        BucketImpl returnVal = this.spy.createBucket(bucketName);
         verify(this.client, times(1)).create(bucketInfo);
     }
 
