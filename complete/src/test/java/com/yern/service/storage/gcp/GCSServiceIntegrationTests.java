@@ -29,6 +29,7 @@ public class GCSServiceIntegrationTests {
     private GCSService service; 
     private List<String> crudBuckets; 
     private String bucketName;
+    private String fileName;
 
     @BeforeEach
     public void setup() {
@@ -50,6 +51,8 @@ public class GCSServiceIntegrationTests {
         for(BucketImpl existingBucket : service.listBuckets()) {
             service.deleteBucket(existingBucket.getName());
         }
+
+        fileName = UUID.randomUUID().toString();
     }
 
     @Test 
@@ -90,7 +93,6 @@ public class GCSServiceIntegrationTests {
         service.createBucket(bucketName);
         assertTrue(service.bucketExists(bucketName));
 
-        String fileName = UUID.randomUUID().toString();
         File file = new File(fileName); 
         Path localPath = Path.of(file.getPath());
         file.createNewFile();
@@ -100,6 +102,10 @@ public class GCSServiceIntegrationTests {
         assertFalse(service.fileExists(cloudPath));
         service.uploadFile(localPath, cloudPath);
         assertTrue(service.fileExists(cloudPath));
+
+        List<String> createdFiles = service.listFiles(bucketName);
+        assertEquals(createdFiles.size(), 1);
+        assertTrue(createdFiles.contains(fileName));
 
         file.delete();
         assertFalse(file.exists());
