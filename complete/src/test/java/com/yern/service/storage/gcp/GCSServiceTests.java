@@ -127,7 +127,7 @@ public class GCSServiceTests {
     }
 
     @Test 
-    public void downloadFile_downloadsTheProvidedTargetFile_toTheLocalPath() {
+    public void downloadFile_downloadsTheProvidedTargetFile_toTheLocalPath() throws IOException {
         doReturn(this.blobId).when(this.spy).getBlobIdFromPath(fullPath);
         doNothing().when(this.client).downloadTo(blobId, localPath);
 
@@ -210,5 +210,20 @@ public class GCSServiceTests {
             times(1)
         )
         .delete(blobId);
+    }
+
+    @Test 
+    public void copyFile_copiesCurrentPathToTargetPath() throws FileNotFoundException {
+        String targetPath = UUID.randomUUID().toString();
+        BlobId targetFileId = mock(BlobId.class);
+        Blob blob = mock(Blob.class);
+
+        doReturn(targetFileId).when(spy).getBlobIdFromPath(targetPath);
+        doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(client.get(blobId)).thenReturn(blob);
+
+        spy.copyFile(fullPath, targetPath);
+
+        verify(blob, times(1)).copyTo(targetFileId);
     }
 }

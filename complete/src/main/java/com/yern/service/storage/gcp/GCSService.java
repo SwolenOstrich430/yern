@@ -67,15 +67,8 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public boolean fileExists(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'fileExists'");
-    }
-
-    @Override
     public void createFolder(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createFolder'");
+        // return createFile(path);
     }
 
     @Override
@@ -105,7 +98,7 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void downloadFile(Path localPath, String targetPath) {
+    public void downloadFile(Path localPath, String targetPath) throws IOException {
         this.client.downloadTo(
             getBlobIdFromPath(targetPath), 
             localPath
@@ -123,9 +116,11 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void updateFile(String path) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateFile'");
+    public void updateFile(
+        Path localPath, 
+        String targetPath
+    ) throws IOException {
+        uploadFile(localPath, targetPath);
     }
 
     @Override
@@ -138,9 +133,16 @@ public class GCSService implements CloudStorageProvider {
     }
 
     @Override
-    public void copyFile(String currentPath, String targetPath) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'copyFile'");
+    public void copyFile(String currentPath, String targetPath) throws FileNotFoundException {
+        BlobId currFileId = getBlobIdFromPath(currentPath);
+        BlobId targetFileId = getBlobIdFromPath(targetPath);
+        Blob currFile = client.get(currFileId);
+
+        if (currFile == null) {
+            throw new FileNotFoundException(currentPath);
+        }
+
+        currFile.copyTo(targetFileId);
     }
 
     @Override
@@ -148,6 +150,13 @@ public class GCSService implements CloudStorageProvider {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'moveFile'");
     }
+
+    @Override
+    public boolean fileExists(String path) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'fileExists'");
+    }
+
 
     public BlobId getBlobIdFromPath(String path) {
         return BlobId.of(
