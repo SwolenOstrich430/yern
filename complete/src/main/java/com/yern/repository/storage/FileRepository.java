@@ -1,6 +1,9 @@
 package com.yern.repository.storage;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.yern.model.storage.FileImpl;
@@ -22,4 +25,8 @@ import com.yern.model.storage.FileImpl;
 @Repository
 public interface FileRepository extends JpaRepository<FileImpl,Long> {
     FileImpl getFileById(Long fildId);
+    @Query(
+        "select * from files where raw_path is not null and formatted_path is null and error is not null"
+    )
+    List<FileImpl> getFilesToProcess();
 }
