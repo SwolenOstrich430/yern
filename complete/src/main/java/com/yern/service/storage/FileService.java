@@ -1,8 +1,12 @@
 package com.yern.service.storage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.yern.model.storage.FileImpl;
 import com.yern.repository.storage.FileRepository;
 
 @Service
@@ -19,5 +23,9 @@ public class FileService {
         this.fileRepository = fileRepository;
         this.storageProvider = storageProvider;
         this.fileProcessor = fileProcessor;
+    }
+
+    public List<FileImpl> getFilesToProcess() {
+        return fileRepository.getFilesToProcess();
     }
 }
