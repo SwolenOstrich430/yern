@@ -13,9 +13,11 @@ public class FileService {
 
     public FileService(
         @Autowired FileRepository fileRepository,
-        @Autowired StorageProvider storageProvider
+        @Autowired StorageProvider storageProvider,
+        @Autowired FileProcessor fileProcessor
     ) {
         this.fileRepository = fileRepository;
         this.storageProvider = storageProvider;
+        this.fileProcessor = fileProcessor;
     }
 }
