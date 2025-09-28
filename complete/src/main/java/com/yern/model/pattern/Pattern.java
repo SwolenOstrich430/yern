@@ -33,11 +33,9 @@ public class Pattern {
     
     @Basic
     @Column
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
     
     @Basic
     @Column
-    private LocalDateTime updated_at;
-
-    
+    private LocalDateTime updatedAt;
 }
