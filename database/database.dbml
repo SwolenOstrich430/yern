@@ -99,8 +99,6 @@ Table yern.sections {
   notes text 
   sequence integer [not null]
   file_id bigint 
-  file_start_page integer
-  file_end_page integer
   created_at timestamp [not null, default: "now()"]
   updated_at timestamp [not null, default: "now()"]
 }
