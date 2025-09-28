@@ -1,6 +1,5 @@
 package com.yern.model.storage;
 
-
-public class FileImpl {
+public class FileImplTest {
 
 }
