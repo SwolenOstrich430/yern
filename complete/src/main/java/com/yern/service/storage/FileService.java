@@ -27,6 +27,14 @@ public class FileService {
         this.fileProcessor = fileProcessor;
     }
 
+    public void processFiles(Pageable pageable) {
+        Page<FileImpl> files = getFilesToProcess(pageable);
+
+        for (FileImpl file : files.getContent()) {
+            fileProcessor.processFile(file);
+        }
+    }
+
     public Page<FileImpl> getFilesToProcess(Pageable pageable) {
         return fileRepository.getFilesToProcess(pageable);
     }

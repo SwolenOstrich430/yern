@@ -28,6 +28,7 @@ public class FileServiceTest {
     private Pageable pageable;
 
     private FileService service;
+    private FileService spy;
 
     @BeforeEach
     public void setup() {
@@ -46,6 +47,8 @@ public class FileServiceTest {
             storageProvider, 
             fileProcessor
         );
+
+        this.spy = Mockito.spy(this.service);
     }
 
     @Test
@@ -80,5 +83,19 @@ public class FileServiceTest {
         
         Page<FileImpl> foundPage = service.getFilesToProcess(pageable);
         assertEquals(page, foundPage);
+    }
+
+    @Test 
+    public void processFiles_processesEachFile_returnedByGetFilesToProcess() {
+        Mockito.doReturn(page).when(spy).getFilesToProcess(pageable);
+
+        spy.processFiles(pageable);
+
+        for (FileImpl file : files) {
+            Mockito.verify(
+                fileProcessor, 
+                Mockito.times(1)
+            ).processFile(file);
+        }
     }
 }
