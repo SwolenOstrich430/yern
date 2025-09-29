@@ -2,24 +2,46 @@ package com.yern.service.storage;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.springframework.http.MediaType;
-
-import com.yern.exceptions.NotFoundException;
-import com.yern.model.storage.FileImpl;
 
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class PDFProcessor implements FileProcessor {@Override
-    public Path processFile(Path filePath) throws IOException, NotFoundException, NotUniqueException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'processFile'");
+public class PDFProcessor implements FileProcessor {
+
+    private final List<MediaType> mediaTypes = List.of(
+        MediaType.APPLICATION_PDF
+    );
+
+    public void processFile(
+        Path filePath
+    ) throws IOException {
+        removeMetaData();
+        removeSensitiveContent();
+        flattenFile();
+        compressFile();
+    }
+
+    public void removeMetaData() {
+
+    }
+
+    public void removeSensitiveContent() {
+
+    }
+
+    public void flattenFile() {
+
+    }
+
+    public void compressFile() {
+
     }
 
     @Override
-    public boolean hasValidMediaType(MediaType mediaType) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'hasValidMediaType'");
+    public boolean isValidMediaType(MediaType mediaType) {
+        return this.mediaTypes.contains(mediaType);
     }
 }
