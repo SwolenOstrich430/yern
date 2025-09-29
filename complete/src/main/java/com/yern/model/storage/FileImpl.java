@@ -18,9 +18,9 @@ import lombok.Setter;
 public class FileImpl {
     private Long id;
     private StorageProviderType storageProvider;
-    private String raw_path;
-    private String formatted_path;
-    private String public_url;
+    private String rawPath;
+    private String formattedPath;
+    private String publicUrl;
     private String etag;
     private ProcessFileException error;
     private LocalDateTime createdAt;
@@ -30,5 +30,9 @@ public class FileImpl {
         return (
             getError() instanceof ProcessFileException
         );
+    }
+
+    public String getBasename() {
+        return "";
     }
 }
