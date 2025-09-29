@@ -1,17 +1,12 @@
 package com.yern.service.storage;
 
-import org.springframework.stereotype.Component;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import com.yern.model.storage.FileImpl;
 
-import lombok.NoArgsConstructor;
-
-@Component
-@NoArgsConstructor
-public class FileProcessor {
-
-    public void processFile(FileImpl file) {
-        
-    }
-
+public interface FileProcessor {
+    public Path processFile(FileImpl file, Path filePath);
+    public boolean isValidFileType(Path filePath);
+    public void validateFileType(Path filePath) throws IOException;
 }
