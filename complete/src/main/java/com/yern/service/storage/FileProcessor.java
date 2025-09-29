@@ -9,6 +9,6 @@ import com.yern.exceptions.NotFoundException;
 
 
 public interface FileProcessor {
-    public Path processFile(Path filePath) throws IOException, NotFoundException, NotUniqueException;
-    public boolean hasValidMediaType(MediaType mediaType);
+    public void processFile(Path filePath) throws IOException, NotFoundException, NotUniqueException;
+    public boolean isValidMediaType(MediaType mediaType);
 }
