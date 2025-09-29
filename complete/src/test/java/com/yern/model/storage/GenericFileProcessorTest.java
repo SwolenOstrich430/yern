@@ -21,12 +21,10 @@ import com.yern.service.storage.GenericFileProcessor;
 import com.yern.service.storage.NotUniqueException;
 import com.yern.exceptions.NotFoundException;
 import com.yern.service.storage.FileProcessor;
-import com.yern.service.storage.FileProcessorFactory;
 
 public class GenericFileProcessorTest {
     private GenericFileProcessor processor;
     private GenericFileProcessor spy;
-    private FileProcessorFactory factory;
     private List<FileProcessor> processors;
     private Path path;
     private MediaType mediaType;
@@ -42,7 +40,6 @@ public class GenericFileProcessorTest {
         }
 
         this.path = Mockito.mock(Path.class);
-        this.factory = Mockito.mock(FileProcessorFactory.class);
         this.processor = new GenericFileProcessor(processors);
         this.spy = Mockito.spy(processor);
         this.mediaType = Mockito.mock(MediaType.class);
@@ -50,13 +47,11 @@ public class GenericFileProcessorTest {
 
     @Test 
     public void processFile_getsTheAssociatedProviderAndCallsProcessFile() throws NotFoundException, NotUniqueException, IOException {
-        Path otherPath = Mockito.mock(Path.class);
         doReturn(processors.get(0)).when(spy).getProvider(path);
-        when(processors.get(0).processFile(path)).thenReturn(otherPath);
+        doNothing().when(processors.get(0)).processFile(path);
 
-        Path foundPath = spy.processFile(path);
+        spy.processFile(path);
 
-        assertEquals(otherPath, foundPath);
         verify(
             processors.get(0),
             times(1)
@@ -67,7 +62,7 @@ public class GenericFileProcessorTest {
     @Test 
     public void hasValidMediaType_returnsTrue_ifAnyProvidersMediaTypesMatchesTheProvided() throws IOException {
         doReturn(mediaType).when(spy).getMediaType(path);
-        doReturn(true).when(spy).hasValidMediaType(mediaType);
+        doReturn(true).when(spy).isValidMediaType(mediaType);
         assertTrue(spy.hasValidMediaType(path));
     }
 
@@ -82,7 +77,7 @@ public class GenericFileProcessorTest {
     @Test 
     public void getProvider_returnsTheRelatedProvider_ifASingleMatchIsFound() throws IOException {
         doReturn(mediaType).when(spy).getMediaType(path);
-        when(processors.get(0).hasValidMediaType(mediaType)).thenReturn(true);
+        when(processors.get(0).isValidMediaType(mediaType)).thenReturn(true);
         FileProcessor foundProvider = spy.getProvider(path);
         assertInstanceOf(FileProcessor.class, foundProvider);
     }
@@ -98,8 +93,8 @@ public class GenericFileProcessorTest {
     @Test 
     public void getProvider_raisesNotUniqueException_ifMoreThanOneMatchIsFound() throws IOException {
         doReturn(mediaType).when(spy).getMediaType(path);
-        when(processors.get(0).hasValidMediaType(mediaType)).thenReturn(true);
-        when(processors.get(1).hasValidMediaType(mediaType)).thenReturn(true);
+        when(processors.get(0).isValidMediaType(mediaType)).thenReturn(true);
+        when(processors.get(1).isValidMediaType(mediaType)).thenReturn(true);
         
         assertThrows(
             NotUniqueException.class, 

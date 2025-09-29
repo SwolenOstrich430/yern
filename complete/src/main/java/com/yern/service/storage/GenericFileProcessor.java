@@ -21,23 +21,23 @@ public class GenericFileProcessor implements FileProcessorOrchestrator {
         this.processors = processors;
     }
 
-    public Path processFile(
+    public void processFile(
         Path filePath
     ) throws IOException {
         FileProcessor processor = getProvider(filePath);
-        return processor.processFile(filePath);
+        processor.processFile(filePath);
     }
 
     public boolean hasValidMediaType(Path filePath) throws IOException {
-        return hasValidMediaType(
+        return isValidMediaType(
             getMediaType(filePath)
         );
     }
 
-    public boolean hasValidMediaType(MediaType mediaType) {
+    public boolean isValidMediaType(MediaType mediaType) {
         return processors
                 .stream()
-                .anyMatch(prov -> prov.hasValidMediaType(mediaType));
+                .anyMatch(prov -> prov.isValidMediaType(mediaType));
     }
 
     public FileProcessor getProvider(
@@ -48,7 +48,7 @@ public class GenericFileProcessor implements FileProcessorOrchestrator {
         List<FileProcessor> processor = 
                     processors
                         .stream()
-                        .filter(prov -> prov.hasValidMediaType(mediaType))
+                        .filter(prov -> prov.isValidMediaType(mediaType))
                         .collect(Collectors.toList());
 
         if (processor.isEmpty()) {
