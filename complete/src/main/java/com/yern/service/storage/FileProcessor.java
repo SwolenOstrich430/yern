@@ -3,10 +3,12 @@ package com.yern.service.storage;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import com.yern.model.storage.FileImpl;
+import org.springframework.http.MediaType;
+
+import com.yern.exceptions.NotFoundException;
+
 
 public interface FileProcessor {
-    public Path processFile(FileImpl file, Path filePath);
-    public boolean isValidFileType(Path filePath);
-    public void validateFileType(Path filePath) throws IOException;
+    public Path processFile(Path filePath) throws IOException, NotFoundException, NotUniqueException;
+    public boolean hasValidMediaType(MediaType mediaType);
 }

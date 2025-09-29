@@ -1,8 +1,14 @@
 package com.yern.service.storage;
 
-import com.yern.model.storage.FileImpl;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.springframework.http.MediaType;
+
+import com.yern.exceptions.NotFoundException;
 
 public interface FileProcessorOrchestrator extends FileProcessor {
-    public FileProcessor getProvider(FileImpl file);
+    FileProcessor getProvider(Path filePath) throws NotUniqueException, IOException, NotFoundException;
+    public boolean hasValidMediaType(MediaType mediaType);
 }
 
