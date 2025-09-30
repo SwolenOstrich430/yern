@@ -21,11 +21,11 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
-import com.yern.service.storage.BucketImpl;
-
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.BlobInfo.Builder;
+import com.yern.dto.storage.BucketImpl;
+import com.yern.service.storage.cloud.gcp.GCSService;
 import com.google.cloud.storage.Bucket;
 
 public class GCSServiceTests {

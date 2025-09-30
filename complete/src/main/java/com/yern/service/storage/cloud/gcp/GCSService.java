@@ -1,4 +1,4 @@
-package com.yern.service.storage.gcp;
+package com.yern.service.storage.cloud.gcp;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
-import com.yern.service.storage.BucketImpl;
-import com.yern.service.storage.CloudStorageProvider;
+import com.yern.dto.storage.BucketImpl;
+import com.yern.service.storage.cloud.CloudStorageProvider;
 
 
 // TODO: 

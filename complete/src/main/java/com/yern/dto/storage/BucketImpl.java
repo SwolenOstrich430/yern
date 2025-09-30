@@ -1,4 +1,4 @@
-package com.yern.service.storage;
+package com.yern.dto.storage;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

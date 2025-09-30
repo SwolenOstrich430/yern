@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.google.cloud.storage.Bucket;
+import com.yern.dto.storage.BucketImpl;
 
 public class BucketImplTests {
     private BucketImpl bucket;

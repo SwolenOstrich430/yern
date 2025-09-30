@@ -18,8 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.cloud.storage.Storage;
+import com.yern.dto.storage.BucketImpl;
 import com.yern.restservice.RestServiceApplication;
-import com.yern.service.storage.BucketImpl;
+import com.yern.service.storage.cloud.gcp.GCSService;
 
 @SpringBootTest(classes=RestServiceApplication.class)
 @TestMethodOrder(OrderAnnotation.class)
