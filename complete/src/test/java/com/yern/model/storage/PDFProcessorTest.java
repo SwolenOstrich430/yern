@@ -1,8 +1,6 @@
 package com.yern.model.storage;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
