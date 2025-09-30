@@ -33,11 +33,11 @@ public class User {
     private String email;
 
     @Basic
-    @Column(name="created_at")
+    @Column
     private LocalDateTime createdAt;
 
     @Basic
-    @Column(name="updated_at")
+    @Column
     private LocalDateTime updatedAt;
 
 	public User(

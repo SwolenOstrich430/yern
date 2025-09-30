@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.UUID;
@@ -50,10 +51,10 @@ public class UserDetailsServiceImplTests {
     }
 
     @Test
-    public void loadUserByUsername_throwsNotFoundException_whenUserWithEmailDoesNotExist() {
+    public void loadUserByUsername_throwsUsernameNotFoundException_whenUserWithEmailDoesNotExist() {
         when(userRepository.getUserByEmail(email)).thenReturn(null);
 
-        assertThrows(NotFoundException.class, () -> {
+        assertThrows(UsernameNotFoundException.class, () -> {
             userDetailsService.loadUserByUsername(email);
         });
     }

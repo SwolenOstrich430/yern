@@ -9,9 +9,11 @@ import java.util.stream.Collectors;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaTypeFactory;
+import org.springframework.stereotype.Component;
 
 import com.yern.exceptions.NotFoundException;
 
+@Component 
 public class GenericFileProcessor implements FileProcessorOrchestrator {
     private List<FileProcessor> processors;
     

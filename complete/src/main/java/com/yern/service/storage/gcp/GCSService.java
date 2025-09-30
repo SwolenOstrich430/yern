@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
@@ -24,6 +25,7 @@ import com.yern.service.storage.CloudStorageProvider;
 // * exception handling for: createSecret, deleteSecret
 // * add other methods as needed 
 // * add docs (https://github.com/googleapis/java-storage?tab=readme-ov-file)
+@Service
 public class GCSService implements CloudStorageProvider {
     private Storage client;
 

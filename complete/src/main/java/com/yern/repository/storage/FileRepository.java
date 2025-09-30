@@ -27,7 +27,7 @@ public interface FileRepository extends JpaRepository<FileImpl,Long> {
     FileImpl getFileById(Long fildId);
     
     @Query(
-        "select * from files where raw_path is not null and formatted_path is null and error is not null"
+        "select f from files f where f.rawPath is not null and f.formattedPath is null and f.error is not null"
     )
     Page<FileImpl> getFilesToProcess(Pageable pageable);
 }
