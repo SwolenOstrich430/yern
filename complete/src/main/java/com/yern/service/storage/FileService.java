@@ -80,10 +80,4 @@ public class FileService {
         String randomDirectory = UUID.randomUUID().toString();
         return Path.of("/bin/temp/" + randomDirectory + fileBasename);
     }
-
-    private void cleanupFile(Optional<Path> file) {
-        if (file.isPresent()) {
-            Files.deleteIfExists(file.get());
-        }
-    }
 }
