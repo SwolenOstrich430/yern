@@ -1,5 +1,7 @@
 package com.yern.model.storage;
 
-public class ProcessFileException {
+import java.io.IOException;
+
+public class ProcessFileException extends IOException {
 
 }

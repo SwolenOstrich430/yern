@@ -1,5 +1,7 @@
 package com.yern.model.storage;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -22,13 +24,13 @@ public class FileImpl {
     private String formattedPath;
     private String publicUrl;
     private String etag;
-    private ProcessFileException error;
+    private Throwable error;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public boolean hasError() {
         return (
-            getError() instanceof ProcessFileException
+            getError() instanceof IOException
         );
     }
 
