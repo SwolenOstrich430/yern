@@ -33,18 +33,6 @@ public class FileService {
         this.fileProcessor = fileProcessor;
     }
 
-    /**
-     * 1. Get pages to process 
-     * 2. For each file:
-     *      a. download the file 
-     *      b. pass the file to processFile 
-     * 3. Take the processed file and upload to storage
-     * 4a. If no errors:
-     *      i. Update the file's formatted path, set error to null
-     * 4b. If errors:
-     *      i. Update the file's error field 
-     * @param pageable
-     */
     public void processFiles(Pageable pageable) {
         Page<FileImpl> files = getFilesToProcess(pageable);
 
@@ -53,7 +41,7 @@ public class FileService {
         }
     }
 
-    public void processFile(FileImpl file) throws IOException {
+    public void processFile(FileImpl file) {
         Path localFile = getNewFilePath(file.getBasename()); 
 
         try {
@@ -65,9 +53,9 @@ public class FileService {
         } catch (AssertionError | IOException e) {
             updateFailedFile(file, e);
         } finally {
-            if (localFile.toFile() != null) {
+            try {
                 localFile.toFile().delete();
-            }
+            } catch (Exception e) {}
         }
     }  
     
