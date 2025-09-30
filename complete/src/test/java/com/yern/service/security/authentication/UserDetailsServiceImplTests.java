@@ -1,13 +1,12 @@
 package com.yern.service.security.authentication;
 
-import com.yern.exceptions.NotFoundException;
+
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
 import com.yern.repository.user.UserAuthenticationRepository;
 import com.yern.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,7 +16,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = UserDetailsServiceImplTests.class)
