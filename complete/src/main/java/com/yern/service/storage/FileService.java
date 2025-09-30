@@ -76,6 +76,7 @@ public class FileService {
         return fileRepository.getFilesToProcess(pageable);
     }
 
+    // TODO: don't hardcode 
     public Path getNewFilePath(String fileBasename) {
         String randomDirectory = UUID.randomUUID().toString();
         return Path.of("/bin/temp/" + randomDirectory + fileBasename);
