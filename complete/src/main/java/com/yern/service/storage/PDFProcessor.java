@@ -34,7 +34,7 @@ public class PDFProcessor implements FileProcessor {
             removeMetaData(document);
             removeJavaScript(document);
             removeEmbeddedFiles(document);
-            flattenFormFields(document);
+            removeAcroForm(document);
             // compression should be happening here by default 
             // could enable xref 
             document.save(filePath.toString());
@@ -62,37 +62,24 @@ public class PDFProcessor implements FileProcessor {
             document.getDocumentCatalog().setOpenAction(null);
         }
 
-        List<PDAnnotation> annotations = new ArrayList<>();
-        for (PDPage page : document.getPages()) {;
-            if (page.getAnnotations() != null) {
-                annotations.addAll(page.getAnnotations());
-            }
-        }
-        // Remove JavaScript from annotations (e.g., form fields)
-        PDAnnotationWidget widget;
-        for (PDAnnotation annotation : annotations) {
-            if (annotation instanceof PDAnnotationWidget) {
-                widget = (PDAnnotationWidget) annotation;
-                if (widget.getActions() != null && widget.getActions().getCOSObject().containsKey(COSName.JS)) {
-                    widget.getActions().getCOSObject().removeItem(COSName.JS);
-                }
-            }
+        PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+        if (acroForm != null) {
+            acroForm.flatten();
         }
     }
 
     public void removeEmbeddedFiles(PDDocument document) throws IOException {
         if (document.getDocumentCatalog().getNames() != null &&
             document.getDocumentCatalog().getNames().getEmbeddedFiles() != null) {
-            document.getDocumentCatalog().getNames().getEmbeddedFiles().getNames().clear();
+            document.getDocumentCatalog().getNames().setEmbeddedFiles(null);
         }
     }
 
-    public void flattenFormFields(PDDocument document) throws IOException {
+    public void removeAcroForm(PDDocument document) throws IOException {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         
         if (acroForm != null) {
-            acroForm.flatten(); 
-            document.getDocumentCatalog().setAcroForm(null); // Optionally remove the AcroForm entirely
+            document.getDocumentCatalog().setAcroForm(null); 
         }
     }
 

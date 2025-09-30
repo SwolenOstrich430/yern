@@ -52,7 +52,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeMetaData(document);
             doNothing().when(spy).removeJavaScript(document);
             doNothing().when(spy).removeEmbeddedFiles(document);
-            doNothing().when(spy).flattenFormFields(document);
+            doNothing().when(spy).removeAcroForm(document);
             
             spy.processFile(path);
 
@@ -68,7 +68,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeMetaData(document);
             doNothing().when(spy).removeJavaScript(document);
             doNothing().when(spy).removeEmbeddedFiles(document);
-            doNothing().when(spy).flattenFormFields(document);
+            doNothing().when(spy).removeAcroForm(document);
             
             spy.processFile(path);
 
@@ -84,7 +84,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeMetaData(document);
             doNothing().when(spy).removeJavaScript(document);
             doNothing().when(spy).removeEmbeddedFiles(document);
-            doNothing().when(spy).flattenFormFields(document);
+            doNothing().when(spy).removeAcroForm(document);
             
             spy.processFile(path);
 
@@ -100,11 +100,11 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeMetaData(document);
             doNothing().when(spy).removeJavaScript(document);
             doNothing().when(spy).removeEmbeddedFiles(document);
-            doNothing().when(spy).flattenFormFields(document);
+            doNothing().when(spy).removeAcroForm(document);
             
             spy.processFile(path);
 
-            verify(spy, times(1)).flattenFormFields(document);
+            verify(spy, times(1)).removeAcroForm(document);
         }
     }
 
@@ -116,7 +116,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeMetaData(document);
             doNothing().when(spy).removeJavaScript(document);
             doNothing().when(spy).removeEmbeddedFiles(document);
-            doNothing().when(spy).flattenFormFields(document);
+            doNothing().when(spy).removeAcroForm(document);
             
             spy.processFile(path);
 
