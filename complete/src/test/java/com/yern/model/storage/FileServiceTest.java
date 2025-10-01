@@ -22,11 +22,11 @@ import org.springframework.data.domain.Pageable;
 import com.yern.exceptions.NotFoundException;
 import com.yern.model.pattern.Section;
 import com.yern.repository.storage.FileRepository;
-import com.yern.service.storage.FileProcessorOrchestrator;
-import com.yern.service.storage.FileService;
-import com.yern.service.storage.GenericFileProcessor;
 import com.yern.service.storage.NotUniqueException;
 import com.yern.service.storage.StorageProvider;
+import com.yern.service.storage.file.FileProcessorOrchestrator;
+import com.yern.service.storage.file.FileService;
+import com.yern.service.storage.file.GenericFileProcessor;
 
 public class FileServiceTest {
     private FileRepository fileRepository;
@@ -81,6 +81,8 @@ public class FileServiceTest {
 
     @Test 
     public void uploadFile_throwsUploadFileException_whenUploadFails() throws IOException {
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+        
         doThrow(
             IOException.class
         ).when(
@@ -89,7 +91,7 @@ public class FileServiceTest {
         
         assertThrows(
             UploadFileException.class, 
-            () -> service.uploadFile(localPath, Section.class.toString())
+            () -> spy.uploadFile(localPath, Section.class.toString())
         );
     }
 
