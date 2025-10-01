@@ -1,4 +1,4 @@
-package com.yern.service.storage;
+package com.yern.service.storage.file;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,6 +12,7 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Component;
 
 import com.yern.exceptions.NotFoundException;
+import com.yern.service.storage.NotUniqueException;
 
 @Component 
 public class GenericFileProcessor implements FileProcessorOrchestrator {

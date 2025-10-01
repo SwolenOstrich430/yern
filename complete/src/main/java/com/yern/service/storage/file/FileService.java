@@ -1,4 +1,4 @@
-package com.yern.service.storage;
+package com.yern.service.storage.file;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.yern.model.storage.FileImpl;
 import com.yern.model.storage.UploadFileException;
 import com.yern.repository.storage.FileRepository;
+import com.yern.service.storage.StorageProvider;
 
 @Service
 public class FileService {
