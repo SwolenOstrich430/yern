@@ -29,7 +29,7 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    // TODO: think about limits on file size 
+    // TODO: think about limits on file size and general file validation 
     @PostMapping("/section/upload")
     public ResponseEntity<UploadFileResponse> uploadFile(
         @RequestParam("file") MultipartFile file
