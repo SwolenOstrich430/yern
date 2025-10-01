@@ -36,7 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
-import com.yern.service.storage.PDFProcessor;
+import com.yern.service.storage.file.PDFProcessor;
 
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;

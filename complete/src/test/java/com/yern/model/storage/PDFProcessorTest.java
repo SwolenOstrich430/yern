@@ -1,6 +1,9 @@
 package com.yern.model.storage;
 
 import org.springframework.http.MediaType;
+
+import com.yern.service.storage.file.PDFProcessor;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -18,8 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import com.yern.service.storage.PDFProcessor;
 
 public class PDFProcessorTest {
     private final PDFProcessor fileProcessor = new PDFProcessor();

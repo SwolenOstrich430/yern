@@ -17,10 +17,10 @@ import org.mockito.Mockito;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.MediaType;
 
-import com.yern.service.storage.GenericFileProcessor;
 import com.yern.service.storage.NotUniqueException;
+import com.yern.service.storage.file.FileProcessor;
+import com.yern.service.storage.file.GenericFileProcessor;
 import com.yern.exceptions.NotFoundException;
-import com.yern.service.storage.FileProcessor;
 
 public class GenericFileProcessorTest {
     private GenericFileProcessor processor;
