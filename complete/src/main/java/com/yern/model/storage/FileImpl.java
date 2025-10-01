@@ -24,6 +24,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FileImpl implements Serializable {
+
+    public static FileImpl from(String rawPath) {
+        FileImpl file = new FileImpl();
+        file.setRawPath(rawPath);
+        return file;
+    }
+
     @Id 
     @GeneratedValue
     private Long id;
