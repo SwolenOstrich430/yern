@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.yern.exceptions.NotFoundException;
+import com.yern.model.pattern.Section;
 import com.yern.repository.storage.FileRepository;
 import com.yern.service.storage.FileProcessorOrchestrator;
 import com.yern.service.storage.FileService;
@@ -65,9 +66,12 @@ public class FileServiceTest {
 
     @Test 
     public void uploadFile_uploadsFileToStorage() throws IOException, UploadFileException {
+        doReturn(targetPath).when(spy).getRawPathForResource(
+            localPath, Section.class.toString()
+        );
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
 
-        service.uploadFile(localPath, targetPath);
+        spy.uploadFile(localPath, Section.class.toString());
 
         verify(
             storageProvider, 
@@ -85,32 +89,35 @@ public class FileServiceTest {
         
         assertThrows(
             UploadFileException.class, 
-            () -> service.uploadFile(localPath, targetPath)
+            () -> service.uploadFile(localPath, Section.class.toString())
         );
     }
 
     @Test 
     public void uploadFile_throwsUploadFileException_whenFileDoesntExistAfterUpload() {
         when(storageProvider.fileExists(targetPath)).thenReturn(false);
-        
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+
         assertThrows(
             UploadFileException.class, 
-            () -> service.uploadFile(localPath, targetPath)
+            () -> spy.uploadFile(localPath, Section.class.toString())
         );
 
         verify(storageProvider, times(1)).fileExists(targetPath);
     }
 
     @Test 
-    public void uploadFile_createsFileEntry_whenUploadSuccessful() throws UploadFileException {
+    public void uploadFile_createsFileEntry_whenUploadSuccessful() throws UploadFileException, IOException {
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
 
         try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
             mockedStatic.when(
                 () -> FileImpl.from(targetPath)
             ).thenReturn(files.get(0));
-
-            service.uploadFile(localPath, targetPath);
+            when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
+            doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+            
+            spy.uploadFile(localPath, Section.class.toString());
             
             verify(
                 fileRepository, 
@@ -122,6 +129,7 @@ public class FileServiceTest {
     @Test 
     public void uploadFile_returnsTheCreatedFile_whenUploadSuccessful() throws UploadFileException {
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
 
         try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
             mockedStatic.when(
@@ -129,7 +137,7 @@ public class FileServiceTest {
             ).thenReturn(files.get(0));
             when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
 
-            FileImpl savedFile = service.uploadFile(localPath, targetPath);
+            FileImpl savedFile = spy.uploadFile(localPath, Section.class.toString());
             assertEquals(savedFile, files.get(0));
             
             verify(
@@ -142,6 +150,7 @@ public class FileServiceTest {
     @Test 
     public void uploadFile_throwsUploadFileException_whenDBInsertUnsuccessful() throws UploadFileException {
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
 
         try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
             mockedStatic.when(
@@ -151,7 +160,7 @@ public class FileServiceTest {
 
             assertThrows(
                 UploadFileException.class, 
-                () -> service.uploadFile(localPath, targetPath)
+                () -> spy.uploadFile(localPath, Section.class.toString())
             );
             
             verify(

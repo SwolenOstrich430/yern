@@ -31,7 +31,9 @@ public class FileService {
     }
 
     // TODO: figure out how to handle which bucket raw and not raw things go to
-    public FileImpl uploadFile(Path localPath, String targetPath) throws UploadFileException {
+    public FileImpl uploadFile(Path localPath, String relatedClass) throws UploadFileException {
+        String targetPath = getRawPathForResource(localPath, relatedClass);
+
         try {
             storageProvider.uploadFile(localPath, targetPath);
             // TODO: move this into upload file method 
@@ -91,6 +93,22 @@ public class FileService {
         file.setError(exc);
         file.setFormattedPath(null);
         fileRepository.save(file);
+    }
+
+    // TODO: not sure class name is the best for this?
+    public String getRawPathForResource(Path localPath, String relatedClass) {
+        String fileBasename = localPath.getFileName().toString();
+        return (
+            "uploads/raw/" + relatedClass.toLowerCase() + "/" +  fileBasename
+        );
+    }
+
+    // TODO: not sure class name is the best for this?
+    public String getFormattedPathForResource(Path localPath, String relatedClass) {
+        String fileBasename = localPath.getFileName().toString();
+        return (
+            "uploads/clean/" + relatedClass.toLowerCase() + "/" +  fileBasename
+        );
     }
 
     public Page<FileImpl> getFilesToProcess(Pageable pageable) {
