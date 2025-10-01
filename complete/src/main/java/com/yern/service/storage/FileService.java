@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.yern.model.storage.FileImpl;
+import com.yern.model.storage.UploadFileException;
 import com.yern.repository.storage.FileRepository;
 
 @Service
@@ -27,6 +28,28 @@ public class FileService {
         this.fileRepository = fileRepository;
         this.storageProvider = storageProvider;
         this.fileProcessor = fileProcessor;
+    }
+
+    // TODO: figure out how to handle which bucket raw and not raw things go to
+    public FileImpl uploadFile(Path localPath, String targetPath) throws UploadFileException {
+        try {
+            storageProvider.uploadFile(localPath, targetPath);
+            // TODO: move this into upload file method 
+            assert(storageProvider.fileExists(targetPath));
+        } catch(IOException | AssertionError exc) {
+            // TODO: add logging 
+            // TODO: create standard message for exception 
+            throw new UploadFileException();
+        }
+
+        FileImpl returnFile; 
+        try {
+            returnFile = fileRepository.save(FileImpl.from(targetPath));
+        } catch(Exception exc) {
+            throw new UploadFileException();
+        }
+
+        return returnFile;
     }
 
     public void processFiles(Pageable pageable) {

@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -60,6 +61,104 @@ public class FileServiceTest {
         );
 
         this.spy = Mockito.spy(this.service);
+    }
+
+    @Test 
+    public void uploadFile_uploadsFileToStorage() throws IOException, UploadFileException {
+        when(storageProvider.fileExists(targetPath)).thenReturn(true);
+
+        service.uploadFile(localPath, targetPath);
+
+        verify(
+            storageProvider, 
+            times(1)
+        ).uploadFile(localPath, targetPath);
+    }
+
+    @Test 
+    public void uploadFile_throwsUploadFileException_whenUploadFails() throws IOException {
+        doThrow(
+            IOException.class
+        ).when(
+            storageProvider
+        ).uploadFile(localPath, targetPath);
+        
+        assertThrows(
+            UploadFileException.class, 
+            () -> service.uploadFile(localPath, targetPath)
+        );
+    }
+
+    @Test 
+    public void uploadFile_throwsUploadFileException_whenFileDoesntExistAfterUpload() {
+        when(storageProvider.fileExists(targetPath)).thenReturn(false);
+        
+        assertThrows(
+            UploadFileException.class, 
+            () -> service.uploadFile(localPath, targetPath)
+        );
+
+        verify(storageProvider, times(1)).fileExists(targetPath);
+    }
+
+    @Test 
+    public void uploadFile_createsFileEntry_whenUploadSuccessful() throws UploadFileException {
+        when(storageProvider.fileExists(targetPath)).thenReturn(true);
+
+        try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
+            mockedStatic.when(
+                () -> FileImpl.from(targetPath)
+            ).thenReturn(files.get(0));
+
+            service.uploadFile(localPath, targetPath);
+            
+            verify(
+                fileRepository, 
+                times(1)
+            ).save(files.get(0));
+        }
+    }
+
+    @Test 
+    public void uploadFile_returnsTheCreatedFile_whenUploadSuccessful() throws UploadFileException {
+        when(storageProvider.fileExists(targetPath)).thenReturn(true);
+
+        try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
+            mockedStatic.when(
+                () -> FileImpl.from(targetPath)
+            ).thenReturn(files.get(0));
+            when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
+
+            FileImpl savedFile = service.uploadFile(localPath, targetPath);
+            assertEquals(savedFile, files.get(0));
+            
+            verify(
+                fileRepository, 
+                times(1)
+            ).save(files.get(0));
+        }
+    }
+
+    @Test 
+    public void uploadFile_throwsUploadFileException_whenDBInsertUnsuccessful() throws UploadFileException {
+        when(storageProvider.fileExists(targetPath)).thenReturn(true);
+
+        try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
+            mockedStatic.when(
+                () -> FileImpl.from(targetPath)
+            ).thenReturn(files.get(0));
+            when(fileRepository.save(files.get(0))).thenThrow(IllegalArgumentException.class);
+
+            assertThrows(
+                UploadFileException.class, 
+                () -> service.uploadFile(localPath, targetPath)
+            );
+            
+            verify(
+                fileRepository, 
+                times(1)
+            ).save(files.get(0));
+        }
     }
 
     @Test
