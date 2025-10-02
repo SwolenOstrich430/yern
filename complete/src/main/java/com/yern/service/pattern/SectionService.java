@@ -3,6 +3,7 @@ package com.yern.service.pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.yern.exceptions.NotFoundException;
 import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
 import com.yern.repository.pattern.SectionRepository;
@@ -15,6 +16,17 @@ public class SectionService {
         @Autowired SectionRepository repository
     ) {
         this.sectionRepository = repository;
+    }
+
+    // get a section and its related file if one exists
+    public Section getSection(Long sectionId) throws NotFoundException {
+        Section section = sectionRepository.getById(sectionId);
+
+        if (section == null) {
+            throw new NotFoundException("Section: " + sectionId);
+        }
+
+        return section;
     }
 
     // create a section without file 
@@ -38,6 +50,4 @@ public class SectionService {
 
         sectionRepository.save(section);
     }
-    // get a section raw 
-    // get a section and its related file
 }

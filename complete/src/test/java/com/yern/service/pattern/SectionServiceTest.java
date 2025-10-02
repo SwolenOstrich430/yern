@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
+import com.yern.exceptions.NotFoundException;
 import com.yern.repository.pattern.SectionRepository;
 
 
@@ -26,6 +27,27 @@ public class SectionServiceTest {
         service = new SectionService(repository);
         section = mock(Section.class);
         file = mock(FileImpl.class);
+    }
+
+    @Test 
+    public void getSection_returnsASection() throws NotFoundException {
+        Long id = 1L;
+        when(repository.getById(id)).thenReturn(section);
+        
+        Section foundSection = service.getSection(id);
+        assertInstanceOf(Section.class, foundSection);
+        assertEquals(section, foundSection);
+    }
+
+    @Test 
+    public void getSection_throwsNotFoundException_whenProvidedIdDoesntExist() {
+        Long id = 1L;
+        when(repository.getById(id)).thenReturn(null);
+
+        assertThrows(
+            NotFoundException.class,
+            () -> service.getSection(id)
+        );
     }
 
     @Test
