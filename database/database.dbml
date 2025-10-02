@@ -48,6 +48,13 @@ Table yern.user_roles {
 ref: yern.user_roles.user_id > yern.users.id
 ref: yern.user_roles.role_id > yern.roles.id
 
+Table yern.user_authentications {
+	id bigint [pk, increment]
+	user_id bigint [not null] 
+	username text [not null]
+	password text [not null]
+}
+ref: yern.user_authentications.user_id > yern.users.id
 
 Table yern.roles {
     id bigint [pk, increment]
@@ -108,7 +115,7 @@ Table yern.files {
   id bigint [pk, increment]
   storage_provider storage_provider [not null]
   raw_path text [not null]
-  formatted_path text [not null]
+  formatted_path text 
   public_url text
   etag text
   error jsonb

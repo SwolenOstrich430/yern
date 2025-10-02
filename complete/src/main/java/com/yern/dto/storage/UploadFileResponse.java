@@ -15,6 +15,7 @@ public class UploadFileResponse {
     private Long fileId; 
     private String rawPath; 
     private StorageProviderType storageProvider;
+    private Throwable error;
 
     public static UploadFileResponse from(FileImpl file) {
         UploadFileResponse resp = new UploadFileResponse();
@@ -22,6 +23,12 @@ public class UploadFileResponse {
         resp.setRawPath(file.getRawPath());
         resp.setStorageProvider(file.getStorageProvider());
 
+        return resp;
+    }
+
+    public static UploadFileResponse from(UploadFileException exc) {
+        UploadFileResponse resp = new UploadFileResponse();
+        resp.setError(exc);
         return resp;
     }
 }

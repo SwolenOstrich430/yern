@@ -74,7 +74,7 @@ public class FileControllerTest {
                     .build();
 
         this.localPath = mock(Path.class);
-        this.resourceName = Section.class.toString();
+        this.resourceName = Section.class.getSimpleName();
         
         this.fileImpl = new FileImpl();
         this.fileImpl.setId(1L);

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
@@ -65,11 +66,15 @@ public class GCSService implements CloudStorageProvider {
 
     @Override
     public boolean bucketExists(String bucketName) {
-        Bucket bucket = client.get(bucketName);
-
-        return (
-            bucket != null && bucket.exists()
-        );
+        // TODO: permissions issues 
+        try {
+            Bucket bucket = client.get(bucketName);
+            return (
+                bucket != null && bucket.exists()
+            );
+        } catch(Exception exc) {
+            return false;
+        }
     }
 
     @Override
@@ -95,6 +100,11 @@ public class GCSService implements CloudStorageProvider {
         String targetPath
     ) throws IOException {
         BlobId blobId = getBlobIdFromPath(targetPath);
+
+        // TODO: add test case 
+        if (!bucketExists(blobId.getBucket())) {
+            throw new BucketNotFoundException(blobId.getBucket());
+        }
 
         this.client.createFrom(
             BlobInfo.newBuilder(blobId).build(), 

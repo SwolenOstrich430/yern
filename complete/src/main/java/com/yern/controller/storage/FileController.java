@@ -1,9 +1,11 @@
 package com.yern.controller.storage;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,18 +35,24 @@ public class FileController {
     @PostMapping("/section/upload")
     public ResponseEntity<UploadFileResponse> uploadFile(
         @RequestParam("file") MultipartFile file
-    ) throws UploadFileException {
-        Path formattedPath = Paths.get(
-            file.getOriginalFilename()
-        ).getFileName();
+    ) throws UploadFileException, IOException {
+        ResponseEntity<UploadFileResponse> resp;
 
-        FileImpl resp = fileService.uploadFile(
-            formattedPath, 
-            Section.class.toString()
-        );
+        try {
+            FileImpl fileRecord = fileService.uploadFile(
+                file,
+                Section.class.getSimpleName()
+            );
 
-        return ResponseEntity.ok(
-            UploadFileResponse.from(resp)
-        );
+            resp = ResponseEntity.ok(
+                UploadFileResponse.from(fileRecord)
+            );
+        } catch(UploadFileException exc) {
+            resp = ResponseEntity.status(
+                HttpStatus.BAD_REQUEST
+            ).body(UploadFileResponse.from(exc));
+        } 
+
+        return resp;
     }
 }

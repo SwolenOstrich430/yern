@@ -67,11 +67,11 @@ public class FileServiceTest {
     @Test 
     public void uploadFile_uploadsFileToStorage() throws IOException, UploadFileException {
         doReturn(targetPath).when(spy).getRawPathForResource(
-            localPath, Section.class.toString()
+            localPath, Section.class.getSimpleName()
         );
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
 
-        spy.uploadFile(localPath, Section.class.toString());
+        spy.uploadFile(localPath, Section.class.getSimpleName());
 
         verify(
             storageProvider, 
@@ -81,7 +81,7 @@ public class FileServiceTest {
 
     @Test 
     public void uploadFile_throwsUploadFileException_whenUploadFails() throws IOException {
-        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
         
         doThrow(
             IOException.class
@@ -91,18 +91,18 @@ public class FileServiceTest {
         
         assertThrows(
             UploadFileException.class, 
-            () -> spy.uploadFile(localPath, Section.class.toString())
+            () -> spy.uploadFile(localPath, Section.class.getSimpleName())
         );
     }
 
     @Test 
     public void uploadFile_throwsUploadFileException_whenFileDoesntExistAfterUpload() {
         when(storageProvider.fileExists(targetPath)).thenReturn(false);
-        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
 
         assertThrows(
             UploadFileException.class, 
-            () -> spy.uploadFile(localPath, Section.class.toString())
+            () -> spy.uploadFile(localPath, Section.class.getSimpleName())
         );
 
         verify(storageProvider, times(1)).fileExists(targetPath);
@@ -117,9 +117,9 @@ public class FileServiceTest {
                 () -> FileImpl.from(targetPath)
             ).thenReturn(files.get(0));
             when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
-            doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+            doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
             
-            spy.uploadFile(localPath, Section.class.toString());
+            spy.uploadFile(localPath, Section.class.getSimpleName());
             
             verify(
                 fileRepository, 
@@ -131,7 +131,7 @@ public class FileServiceTest {
     @Test 
     public void uploadFile_returnsTheCreatedFile_whenUploadSuccessful() throws UploadFileException {
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
-        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
 
         try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
             mockedStatic.when(
@@ -139,7 +139,7 @@ public class FileServiceTest {
             ).thenReturn(files.get(0));
             when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
 
-            FileImpl savedFile = spy.uploadFile(localPath, Section.class.toString());
+            FileImpl savedFile = spy.uploadFile(localPath, Section.class.getSimpleName());
             assertEquals(savedFile, files.get(0));
             
             verify(
@@ -152,7 +152,7 @@ public class FileServiceTest {
     @Test 
     public void uploadFile_throwsUploadFileException_whenDBInsertUnsuccessful() throws UploadFileException {
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
-        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.toString());
+        doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
 
         try (MockedStatic<FileImpl> mockedStatic = mockStatic(FileImpl.class)) {
             mockedStatic.when(
@@ -162,7 +162,7 @@ public class FileServiceTest {
 
             assertThrows(
                 UploadFileException.class, 
-                () -> spy.uploadFile(localPath, Section.class.toString())
+                () -> spy.uploadFile(localPath, Section.class.getSimpleName())
             );
             
             verify(
