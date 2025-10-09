@@ -135,6 +135,11 @@
             <artifactId>hypersistence-utils-hibernate-60</artifactId>
             <version>3.9.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+            <version>${spring-cloud-gcp.version}</version>
+        </dependency>
     </dependencies>
 	<build>
 		<plugins>
