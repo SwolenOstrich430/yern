@@ -11,20 +11,25 @@ import org.junit.jupiter.api.Test;
 
 import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
+import com.yern.dto.pattern.SectionCreateRequest;
+import com.yern.dto.pattern.SectionCreateResponse;
 import com.yern.exceptions.NotFoundException;
+import com.yern.mapper.pattern.SectionMapper;
 import com.yern.repository.pattern.SectionRepository;
 
 
 public class SectionServiceTest {
     private SectionRepository repository;
     private SectionService service; 
+    private SectionMapper mapper;
     private Section section;
     private FileImpl file;
 
     @BeforeEach 
     public void setup() {
         repository = mock(SectionRepository.class);
-        service = new SectionService(repository);
+        mapper = mock(SectionMapper.class);
+        service = new SectionService(repository, mapper);
         section = mock(Section.class);
         file = mock(FileImpl.class);
     }
@@ -51,31 +56,63 @@ public class SectionServiceTest {
     }
 
     @Test
-    public void createSection_returnsASection() {
+    public void createSection_returnsASectionCreateResponse() {
         String name = UUID.randomUUID().toString();
         Long patternId = 1L;
+        Long fileId = 2L;
 
-        when(repository.save(any(Section.class))).thenReturn(section);
-        Section section = service.createSection(name, patternId);
-        assertInstanceOf(Section.class, section);
+        SectionCreateRequest req = new SectionCreateRequest();
+        req.setName(name);
+        req.setPatternId(patternId);
+        req.setFileId(fileId);
+
+        when(mapper.dtoToModel(req)).thenReturn(section);
+        when(
+            repository.save(section)
+        )
+        .thenAnswer(
+            invocation -> invocation.getArgument(0)
+        );
+        when(mapper.modelToDto(section)).thenCallRealMethod();
+        when(section.getFile()).thenReturn(file);
+        when(section.getName()).thenReturn(name);
+        when(section.getPatternId()).thenReturn(patternId);
+        when(file.getId()).thenReturn(fileId);
+
+        SectionCreateResponse section = service.createSection(req);
+        assertNotNull(section);
+        assertInstanceOf(SectionCreateResponse.class, section);
     }
 
     @Test 
     public void createSection_createsASection_withProvidedDetails() {
         String name = UUID.randomUUID().toString();
         Long patternId = 1L;
+        Long fileId = 2L;
 
+        SectionCreateRequest req = new SectionCreateRequest();
+        req.setName(name);
+        req.setPatternId(patternId);
+        req.setFileId(fileId);
+
+        when(mapper.dtoToModel(req)).thenReturn(section);
         when(
-            repository.save(any(Section.class))
+            repository.save(section)
         )
         .thenAnswer(
             invocation -> invocation.getArgument(0)
         );
+        when(mapper.modelToDto(section)).thenCallRealMethod();
+        when(section.getFile()).thenReturn(file);
+        when(section.getName()).thenReturn(name);
+        when(section.getPatternId()).thenReturn(patternId);
+        when(file.getId()).thenReturn(fileId);
 
-        Section section = service.createSection(name, patternId);
-
+        SectionCreateResponse section = service.createSection(req);
         assertEquals(section.getName(), name);
         assertEquals(section.getPatternId(), patternId);
+        assertEquals(section.getFileId(), fileId);
+
         verify(
             repository, 
             times(1)

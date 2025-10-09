@@ -3,19 +3,25 @@ package com.yern.service.pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.yern.dto.pattern.SectionCreateRequest;
+import com.yern.dto.pattern.SectionCreateResponse;
 import com.yern.exceptions.NotFoundException;
 import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
 import com.yern.repository.pattern.SectionRepository;
+import com.yern.mapper.pattern.SectionMapper;
 
 @Service 
 public class SectionService {
     private SectionRepository sectionRepository;
+    private SectionMapper sectionMapper;
 
     public SectionService(
-        @Autowired SectionRepository repository
+        @Autowired SectionRepository repository,
+        @Autowired SectionMapper mapper
     ) {
         this.sectionRepository = repository;
+        this.sectionMapper = mapper;
     }
 
     // get a section and its related file if one exists
@@ -32,12 +38,18 @@ public class SectionService {
     // create a section without file 
     // verify that it's tied to a real pattern -- may need to just be in the pattern service 
     // need to think about auth also 
-    public Section createSection(String name, Long patternId) {
-        Section section = new Section();
-        section.setName(name);
-        section.setPatternId(patternId);
+    // this should never be called directly in the api 
+    // otherwise, no validation will occur
+    // contextually, this should only be called through pattern service
+    protected SectionCreateResponse createSection(
+        SectionCreateRequest req 
+    ) {
+        // TODO: validate sequence not null
+        Section createdSection = sectionRepository.save(
+            sectionMapper.dtoToModel(req)
+        );
 
-        return sectionRepository.save(section);
+        return sectionMapper.modelToDto(createdSection);
     }
 
     // upload a file 

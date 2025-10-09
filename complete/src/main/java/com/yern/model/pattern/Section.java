@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,6 +35,8 @@ public class Section {
     private String name;
     @Column
     private String notes;
+    @Column 
+    private int sequence;
     @JoinColumn
     @ManyToOne
     private FileImpl file;
@@ -41,4 +44,15 @@ public class Section {
     private LocalDateTime createdAt;
     @Column
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
 }

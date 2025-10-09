@@ -63,7 +63,7 @@ public class FileControllerTest {
     private FileImpl fileImpl;
     private MockMultipartFile rawFile;
 
-     private Gson gson = new GsonBuilder()
+    private Gson gson = new GsonBuilder()
         .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeDeserializer())
         .create();
 

@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -155,5 +157,15 @@ public class FileService {
         file.deleteOnExit();
 
         return Path.of(fullPath);
+    }
+
+    // TODO: add unit test 
+    // TODO: add file_permissions table and define permissions 
+    // need to look at file permissions 
+    public void validateAccess(
+        Long fileId,
+        Long userId
+    ) throws AccessDeniedException {
+        // fileRepository.findById(fileId);
     }
 }

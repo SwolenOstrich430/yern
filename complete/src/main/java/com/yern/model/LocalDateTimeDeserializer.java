@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// TODO: fix this -- terrible
 public class LocalDateTimeDeserializer implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
 
     public JsonElement serialize(LocalDateTime date, Type typeOfSrc, JsonSerializationContext context) {
