@@ -12,7 +12,6 @@ import com.google.cloud.storage.Bucket;
 import com.yern.dto.storage.BucketImpl;
 
 public class BucketImplTests {
-    private BucketImpl bucket;
     private final String bucketName = UUID.randomUUID().toString();
 
     @BeforeEach

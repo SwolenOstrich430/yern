@@ -28,7 +28,7 @@ public class FileImplTest {
 
     @Test
     public void hasError_returnsTrue_whenErrorIsNotNull() {
-        file.setError(error);
+        file.setError(new ErrorLog());
         assertTrue(file.hasError());
     }
 

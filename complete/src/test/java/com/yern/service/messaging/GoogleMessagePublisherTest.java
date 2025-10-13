@@ -3,8 +3,6 @@ package com.yern.service.messaging;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.yern.service.messaging.google.GoogleMessagePublisher;
 
-import io.netty.util.concurrent.Future;
-
 import static org.mockito.Mockito.*;
 
 import java.util.UUID;

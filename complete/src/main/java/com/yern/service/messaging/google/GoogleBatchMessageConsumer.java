@@ -1,15 +1,13 @@
 package com.yern.service.messaging.google;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.function.Function;
 
 import com.google.cloud.spring.pubsub.reactive.PubSubReactiveFactory;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
-import com.google.cloud.spring.pubsub.support.converter.PubSubMessageConverter;
 import com.yern.service.messaging.BatchMessageConsumer;
 import com.yern.service.messaging.ListProcessor;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import reactor.core.publisher.Mono;
@@ -19,7 +17,7 @@ import reactor.core.publisher.Mono;
 public class GoogleBatchMessageConsumer<T> implements BatchMessageConsumer<AcknowledgeablePubsubMessage, T> {
     private PubSubReactiveFactory factory;
     private String subscriptionName;
-    private PubSubMessageConverter mapper;
+    private CustomPubSubMessageConverter mapper;
     private int bufferSize;
     private Long pollingMs;
     private Class<T> targetType;
@@ -28,7 +26,7 @@ public class GoogleBatchMessageConsumer<T> implements BatchMessageConsumer<Ackno
     public GoogleBatchMessageConsumer(
         PubSubReactiveFactory factory,
         String subscriptionName,
-        PubSubMessageConverter mapper,
+        CustomPubSubMessageConverter mapper,
         int bufferSize,
         Long pollingMs,
         Class<T> targetType,
@@ -43,22 +41,14 @@ public class GoogleBatchMessageConsumer<T> implements BatchMessageConsumer<Ackno
         this.handler = handler;
     }
 
-    public GoogleBatchMessageConsumer() {
-        //TODO Auto-generated constructor stub
-    }
+    public GoogleBatchMessageConsumer() {}
 
     public void startProcessing() {
         factory.poll(subscriptionName, pollingMs) 
-                .buffer(bufferSize) 
+                .take(bufferSize)
+                .buffer(Duration.ofMillis(500L)) 
                 .flatMap(this::processBatch)
-                .doOnError(t -> {
-                    try {
-                        onError(t);
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                })
+                .doOnError(this::onError)
                 .subscribe();
     }
 
@@ -68,8 +58,8 @@ public class GoogleBatchMessageConsumer<T> implements BatchMessageConsumer<Ackno
         List<AcknowledgeablePubsubMessage> messages
     ) {
         return Mono.fromRunnable(() -> {
-            List<T> convertedMessages = messages.stream().map(
-                message -> mapper.fromPubSubMessage(
+            List<T> convertedMessages = (List<T>) messages.stream().map(
+                message -> mapper.from(
                     message.getPubsubMessage(),
                     targetType
                 )
@@ -81,8 +71,9 @@ public class GoogleBatchMessageConsumer<T> implements BatchMessageConsumer<Ackno
     }
 
     @Override
-    public void onError(Throwable err) throws Exception {
-        throw new Exception(err);
+    public void onError(Throwable err) {        
+        return;
+        // throw new Exception(err);
     }
 
     public void setHandler(ListProcessor<T> handler2) {

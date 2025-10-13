@@ -7,28 +7,23 @@ import com.yern.dto.authentication.LoginRequest;
 import com.yern.dto.authentication.LoginResponse;
 import com.yern.exceptions.AuthenticationExceptionImpl;
 import com.yern.model.LocalDateTimeDeserializer;
-import com.yern.model.user.User;
 import com.yern.service.security.authentication.AuthenticationService;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -130,7 +125,7 @@ public class AuthenticationControllerTests {
             new AuthenticationExceptionImpl("message")
         );
 
-        ServletException err = assertThrows(ServletException.class, () ->
+        assertThrows(ServletException.class, () ->
             this.mockMvc.perform(post(loginUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(loginRequest)

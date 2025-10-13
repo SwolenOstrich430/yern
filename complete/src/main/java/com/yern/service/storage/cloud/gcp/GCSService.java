@@ -105,7 +105,7 @@ public class GCSService implements CloudStorageProvider {
             throw new BucketNotFoundException(blobId.getBucket());
         }
 
-        this.client.createFrom(
+        client.createFrom(
             BlobInfo.newBuilder(blobId).build(), 
             localPath
         );

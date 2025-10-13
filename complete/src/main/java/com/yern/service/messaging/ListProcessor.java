@@ -7,3 +7,4 @@ public
 interface ListProcessor<T> {
     void process(List<T> list);
 }
+

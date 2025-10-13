@@ -1,6 +1,5 @@
 package com.yern.service.security.authentication;
 
-import com.yern.exceptions.NotFoundException;
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
 import com.yern.repository.user.UserAuthenticationRepository;

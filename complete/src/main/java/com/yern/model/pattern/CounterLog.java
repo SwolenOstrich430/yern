@@ -1,11 +1,11 @@
 package com.yern.model.pattern;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.cglib.core.Local;
-
-import com.yern.dto.pattern.SectionCounterLogCreateRequest;
+import com.yern.dto.messaging.MessagePayload;
+import com.yern.dto.pattern.CounterLogCreateRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "section_counter_logs")
+@Table(name = "counter_logs")
 @Getter
 @Setter
 @NoArgsConstructor
-public class SectionCounterLog {
+public class CounterLog implements MessagePayload {
     @Id 
     @GeneratedValue
     private UUID id;
@@ -30,8 +30,11 @@ public class SectionCounterLog {
     @Column 
     private int value;
 
+    @Column 
+    private Long counterId;
+
     @Column
-    private Long sectionId;
+    private String externalId;
 
     @Column
     private LocalDateTime createdAt;
@@ -43,10 +46,19 @@ public class SectionCounterLog {
         }
     }
 
-    public static SectionCounterLog from(SectionCounterLogCreateRequest req) {
-        SectionCounterLog log = new SectionCounterLog();
-        log.setSectionId(req.getSectionId());
+    public static CounterLog from(CounterLogCreateRequest req) {
+        CounterLog log = new CounterLog();
+        Objects.requireNonNull(
+            req.getCounterId(), 
+            "Counter Id cannot be null."
+        );         
+        log.setCounterId(req.getCounterId());
+
+        assert(req.getValue() >= 0);
         log.setValue(req.getValue());
+
+        assert(!req.getExternalId().isEmpty());
+        log.setExternalId(req.getExternalId());
 
         return log;
     }

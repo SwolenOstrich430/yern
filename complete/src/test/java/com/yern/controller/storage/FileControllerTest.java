@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -32,7 +32,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.yern.dto.storage.UploadFileResponse;
 import com.yern.model.LocalDateTimeDeserializer;
-import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
 import com.yern.model.storage.StorageProviderType;
 import com.yern.restservice.RestServiceApplication;
@@ -58,8 +57,6 @@ public class FileControllerTest {
     @Value("${api.files-endpoint}")
     private String filesEndpoint;
 
-    private Path localPath;
-    private String resourceName;
     private FileImpl fileImpl;
     private MockMultipartFile rawFile;
 
@@ -72,9 +69,6 @@ public class FileControllerTest {
         this.mockMvc = MockMvcBuilders
                     .webAppContextSetup(context)
                     .build();
-
-        this.localPath = mock(Path.class);
-        this.resourceName = Section.class.getSimpleName();
         
         this.fileImpl = new FileImpl();
         this.fileImpl.setId(1L);
@@ -93,7 +87,7 @@ public class FileControllerTest {
     public void uploadFile_returnsAnUploadFileResponse() throws Exception {
         when(
             fileService.uploadFile(
-                any(), any()
+                any(MultipartFile.class), any(String.class)
             )
         ).thenReturn(fileImpl);
         

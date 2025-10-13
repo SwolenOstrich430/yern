@@ -12,4 +12,5 @@ public class SectionCreateRequest {
     private Long fileId;
     private Long patternId;
     private int sequence;
+    private Long counterId;
 }

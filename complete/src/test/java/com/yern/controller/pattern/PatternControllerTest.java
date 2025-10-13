@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,20 +27,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.secretmanager.v1.CreateSecretRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.yern.dto.pattern.SectionCreateResponse;
 import com.yern.dto.pattern.PatternCreateRequest;
 import com.yern.dto.pattern.PatternCreateResponse;
 import com.yern.dto.pattern.SectionCreateRequest;
-import com.yern.dto.storage.UploadFileResponse;
 import com.yern.model.LocalDateTimeDeserializer;
 import com.yern.restservice.RestServiceApplication;
 import com.yern.service.pattern.PatternService;
-import com.yern.service.pattern.SectionService;
 import com.yern.service.user.UserService;
-import com.yern.model.pattern.Section;
 import com.yern.model.user.User; 
 import com.yern.exceptions.AccessDeniedException;
 
@@ -74,7 +69,6 @@ public class PatternControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final UserDetails userDetails = mock(UserDetails.class);
     private final String name = UUID.randomUUID().toString();
     private final String description = UUID.randomUUID().toString();
     private final Long patternId = 1L;

@@ -113,7 +113,7 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.6.0.Beta1</version> 
+            <version>1.6.3</version> 
         </dependency>
         <dependency>
 			<groupId>com.google.cloud</groupId>
@@ -140,6 +140,16 @@
             <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
             <version>${spring-cloud-gcp.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>2.20.0</version>
+        </dependency>
     </dependencies>
 	<build>
 		<plugins>
@@ -162,7 +172,7 @@
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>1.6.0.Beta1</version>
+                            <version>1.6.3</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

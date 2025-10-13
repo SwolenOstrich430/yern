@@ -4,7 +4,6 @@ import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
 import com.yern.model.user.User;
 import com.yern.repository.user.UserRepository;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

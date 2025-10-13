@@ -1,9 +1,11 @@
 package com.yern.service.storage.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
@@ -24,11 +26,14 @@ public class GenericFileProcessor implements FileProcessorOrchestrator {
         this.processors = processors;
     }
 
-    public void processFile(
+    public Path processFile(
         Path filePath
     ) throws IOException {
         FileProcessor processor = getProvider(filePath);
-        processor.processFile(filePath);
+        Path tempPath = getTempFilePath(filePath);
+        processor.processFile(filePath, tempPath);
+
+        return tempPath;
     }
 
     public boolean hasValidMediaType(Path filePath) throws IOException {
@@ -74,5 +79,17 @@ public class GenericFileProcessor implements FileProcessorOrchestrator {
         );
 
         return mimeTypeOptional.get();
+    }
+
+    public Path getTempFilePath(Path fileToProcess) throws IOException {
+        String fileName = fileToProcess.getFileName().toString();
+        String[] fileParts = fileName.split("\\.");
+
+        File tempFile = File.createTempFile(
+            fileParts[0] + "_" + UUID.randomUUID().toString(), 
+            "." + fileParts[fileParts.length - 1]
+        );
+
+        return tempFile.toPath();
     }
 }

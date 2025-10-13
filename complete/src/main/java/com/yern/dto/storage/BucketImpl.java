@@ -1,11 +1,8 @@
 package com.yern.dto.storage;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 import com.google.cloud.storage.Bucket;
-
-import lombok.Getter;
 
 // TODO: this should probably be moved to a factory 
 // TODO: add a provider enum 

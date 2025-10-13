@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,9 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.yern.dto.pattern.SectionCreateResponse;
 import com.yern.model.user.User;
-import com.google.rpc.context.AttributeContext.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.yern.dto.pattern.PatternCreateRequest;
 import com.yern.dto.pattern.PatternCreateResponse;
+import com.yern.dto.pattern.CounterLogCreateRequest;
 import com.yern.dto.pattern.SectionCreateRequest;
 import com.yern.service.pattern.PatternService;
 import com.yern.service.user.UserService;
@@ -60,6 +59,20 @@ public class PatternController {
         
         return ResponseEntity.ok(
             patternService.addSection(user.getId(), req)
+        );
+    }
+
+    // TODO: revisit if this should be void or not 
+    @PostMapping("/sections/counter/update")
+    public void createSectionCounterLog(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestBody CounterLogCreateRequest req
+    ) throws JsonProcessingException {
+        // TODO: figure out if you can just get this from the request immediately 
+        User user = getUserFromDetails(userDetails); 
+        patternService.sendSectionCounterLog(
+            user.getId(), 
+            req
         );
     }
 

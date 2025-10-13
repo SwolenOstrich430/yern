@@ -10,6 +10,6 @@ import com.yern.service.storage.NotUniqueException;
 
 
 public interface FileProcessor {
-    public void processFile(Path filePath) throws IOException, NotFoundException, NotUniqueException;
+    public Path processFile(Path filePath, Path targetPath) throws IOException, NotFoundException, NotUniqueException;
     public boolean isValidMediaType(MediaType mediaType);
 }

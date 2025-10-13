@@ -1,15 +1,17 @@
 package com.yern.mapper.pattern;
 
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yern.dto.pattern.PatternCreateRequest;
 import com.yern.dto.pattern.PatternCreateResponse;
 import com.yern.model.pattern.Pattern;
 
+import lombok.NoArgsConstructor;
+
 @Mapper
-@Component
-public class PatternMapper {
+@NoArgsConstructor
+public class PatternMapper extends ObjectMapper {
 
     public Pattern dtoToModel(PatternCreateRequest req) {
         Pattern pattern = new Pattern();

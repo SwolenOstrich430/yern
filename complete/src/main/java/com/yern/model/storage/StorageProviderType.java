@@ -1,7 +1,5 @@
 package com.yern.model.storage;
 
-import com.google.api.services.storage.Storage;
-
 public enum StorageProviderType {
     GCS("gcs");
 

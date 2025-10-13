@@ -1,13 +1,12 @@
 package com.yern.model.storage;
 
+import java.io.File;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
-import org.springframework.cglib.core.Local;
 
 import com.yern.mapper.storage.file.StorageProviderTypeConverter;
 
@@ -15,8 +14,6 @@ import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -69,10 +66,14 @@ public class FileImpl implements Serializable {
     @Column(columnDefinition = "timestamp default now()")
     private LocalDateTime updatedAt;
 
+    private static final String RAW_DIR = "raw";
+    private static final String FORMATTED_DIR = "formatted";
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+            updatedAt = createdAt;
         }
 
         if (updatedAt == null) {
@@ -87,6 +88,33 @@ public class FileImpl implements Serializable {
     }
 
     public String getBasename() {
-        return "";
+        File file = new File(rawPath);
+        return file.getName();
+    }
+
+    public String getFormattedPath() {
+        if (formattedPath == null || formattedPath.isEmpty()) {
+            setFormattedPath(getDefaultFormattedFileName());
+        }
+
+        return formattedPath;
+    }
+
+    public String getDefaultFormattedFileName() {
+        assert(rawPath != null);
+        assert(!rawPath.isEmpty());
+
+        File rawPathAsFile = new File(rawPath);
+        String formattedFileName = rawPathAsFile.getPath().replace(
+            "/" + RAW_DIR + "/", 
+            "/" + FORMATTED_DIR + "/"
+        );
+        assert(formattedFileName.contains("/" + FORMATTED_DIR + "/"));
+        return formattedFileName;
+    }
+
+    public void setEtag(String etag) {
+        assert(etag != null && !etag.isEmpty());
+        this.etag = etag;
     }
 }

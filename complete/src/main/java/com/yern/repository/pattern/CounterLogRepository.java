@@ -7,16 +7,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.yern.model.pattern.SectionCounterLog;
+import com.yern.model.pattern.CounterLog;
 
-public interface SectionCounterLogRepository extends JpaRepository<SectionCounterLog, UUID> {
+public interface CounterLogRepository extends JpaRepository<CounterLog, UUID> {
     @Modifying
     @Query(nativeQuery = true, value = """
         with rows_to_delete as (
             select 
                 id 
             from
-                yern.section_counter_logs
+                yern.counter_logs
             order by 
                 id 
             limit 
@@ -25,25 +25,25 @@ public interface SectionCounterLogRepository extends JpaRepository<SectionCounte
         deleted_rows as (
             delete 
             from 
-                yern.section_counter_logs
+                yern.counter_logs
             using 
                 rows_to_delete
             where 
-                rows_to_delete.id = section_counter_logs.id
+                rows_to_delete.id = counter_logs.id
             returning 
                 *
         ),
         aggregated_counts as (
             select 
                 sum(value) as count,
-                section_id
+                counter_id
             from 
                 deleted_rows 
             group by 
-                section_id
+                counter_id
         )
         update 
-            yern.section_counters 
+            yern.counters 
         set 
             value = (
                 value + aggregated_counts.count
@@ -51,7 +51,7 @@ public interface SectionCounterLogRepository extends JpaRepository<SectionCounte
         from 
             aggregated_counts 
         where 
-            section_counters.section_id = aggregated_counts.section_id
+            counters.id = aggregated_counts.counter_id
     """)
     public void aggregateAndDeleteLogs(@Param("limit") int limit);
 }

@@ -1,52 +1,42 @@
 package com.yern.model.pattern;
 
-
 import java.time.LocalDateTime;
 
-import com.yern.model.storage.FileImpl;
+import org.hibernate.event.spi.LockEventListener;
+import org.springframework.cglib.core.Local;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity 
-@Table(name="sections")
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter 
+@Entity
+@Table(name = "counters")
+@Getter
 @Setter
-public class Section {
-    @Id 
+@NoArgsConstructor
+public class Counter {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column 
-    private Long patternId;
-    @Column
-    private String name;
-    @Column
-    private String notes;
+    private Long value;
+
     @Column 
-    private int sequence;
-    @JoinColumn
-    @ManyToOne
-    private FileImpl file;
-    @OneToOne 
-    private Counter counter;
-    @Column
     private LocalDateTime createdAt;
-    @Column
+
+    @Column 
     private LocalDateTime updatedAt;
+
+    @Column 
+    private LocalDateTime lastResetAt;
 
     @PrePersist
     public void prePersist() {

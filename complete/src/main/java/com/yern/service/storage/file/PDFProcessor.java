@@ -1,8 +1,13 @@
 package com.yern.service.storage.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSArray;
@@ -12,9 +17,12 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 
 import lombok.NoArgsConstructor;
+import reactor.core.publisher.Mono;
 
+@Service 
 @NoArgsConstructor
 public class PDFProcessor implements FileProcessor {
 
@@ -22,18 +30,46 @@ public class PDFProcessor implements FileProcessor {
         MediaType.APPLICATION_PDF
     );
 
-    public void processFile(
-        Path filePath
-    ) throws IOException {
-        try (PDDocument document = Loader.loadPDF(filePath.toFile())) {
-            removeMetaData(document);
-            removeJavaScript(document);
-            removeEmbeddedFiles(document);
-            removeAcroForm(document);
-            // compression should be happening here by default 
-            // could enable xref 
-            document.save(filePath.toString());
-        } 
+    public Path processFile(Path filePath, Path targetPath) throws IOException {
+        loadPdfAsync(filePath)
+            .thenAccept(document -> {
+                try {
+                    processFile(document, targetPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                        "Error during file processing", e
+                    );
+                } finally {
+                    try {
+                        document.close();
+                    } catch (IOException e) {}
+                }
+            });
+        return filePath;
+    }
+
+    public CompletableFuture<PDDocument> loadPdfAsync(Path filePath) {
+        return CompletableFuture.supplyAsync(
+            () -> loadFile(filePath)
+        );
+    }
+
+    public PDDocument loadFile(Path filePath) {
+        try {
+            return Loader.loadPDF(filePath.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to parse file", e);
+        }
+    }
+
+    public void processFile(PDDocument document, Path filePath) throws IOException {
+        removeMetaData(document);
+        removeJavaScript(document);
+        removeEmbeddedFiles(document);
+        removeAcroForm(document);
+        // compression should be happening here by default 
+        // could enable xref 
+        document.save(filePath.toString());
     }
 
     public void removeMetaData(

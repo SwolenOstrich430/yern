@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import org.springframework.security.access.AccessDeniedException;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import com.yern.dto.pattern.SectionCreateResponse;
 import com.yern.mapper.pattern.PatternMapper;
 import com.yern.repository.pattern.PatternRepository;
 import com.yern.repository.pattern.UserPatternRepository;
+import com.yern.service.messaging.MessagePublisher;
 import com.yern.service.storage.file.FileService;
 import com.yern.model.pattern.Pattern;
 import com.yern.model.pattern.UserPattern;
@@ -35,6 +37,8 @@ public class PatternServiceTest {
     private PatternCreateResponse patternCreateResponse;
     private Pattern pattern;
     private UserPattern userPattern;
+    private MessagePublisher messagePublisher;
+    private String topicName = UUID.randomUUID().toString();
     
     private final Long fileId = 3L;
     private final Long patternId = 1L;
@@ -47,13 +51,16 @@ public class PatternServiceTest {
         this.fileService = mock(FileService.class);
         this.userPatternRepository = mock(UserPatternRepository.class);
         this.patternMapper = mock(PatternMapper.class);
+        this.messagePublisher = mock(MessagePublisher.class);
 
         this.patternService = new PatternService(
             fileService,
             sectionService, 
             patternRepository,
             userPatternRepository,
-            patternMapper
+            patternMapper,
+            messagePublisher,
+            topicName
         );
 
         this.patternCreateRequest = mock(PatternCreateRequest.class);

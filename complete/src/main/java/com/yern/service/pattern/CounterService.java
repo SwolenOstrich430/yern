@@ -6,26 +6,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.yern.dto.pattern.SectionCounterLogCreateRequest;
-import com.yern.model.pattern.SectionCounterLog;
-import com.yern.repository.pattern.SectionCounterLogRepository;
+import com.yern.dto.pattern.CounterLogCreateRequest;
+import com.yern.model.pattern.CounterLog;
+import com.yern.repository.pattern.CounterLogRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class SectionCounterService {
+public class CounterService {
 
-    private SectionCounterLogRepository counterLogRepository; 
+    private CounterLogRepository counterLogRepository; 
 
-    public SectionCounterService(
-        @Autowired SectionCounterLogRepository counterLogRepository
+    public CounterService(
+        @Autowired CounterLogRepository counterLogRepository
     ) {
         this.counterLogRepository = counterLogRepository;
     }
 
-    public List<SectionCounterLog> createLogs(List<SectionCounterLogCreateRequest> logs) {
+    public List<CounterLog> createLogs(List<CounterLogCreateRequest> logs) {
         return counterLogRepository.saveAll(
-            logs.stream().map(log -> SectionCounterLog.from(log)).toList()
+            logs.stream().map(log -> CounterLog.from(log)).toList()
         );
     }
 
