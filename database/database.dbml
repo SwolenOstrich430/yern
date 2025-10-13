@@ -70,11 +70,11 @@ Table yern.permissions {
 }
 
 Table yern.roles_permissions {
-  role_id [pk, not null]
-  permission_id [pk, not null]
+  role_id bigint [pk, not null]
+  permission_id bigint [pk, not null]
 }
-ref: yern.roles_permissions.role_id = yern.roles.id 
-ref: yern.roles_permissions.permission_id = yern.permissions.id 
+ref: yern.roles_permissions.role_id > yern.roles.id 
+ref: yern.roles_permissions.permission_id > yern.permissions.id 
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
@@ -180,10 +180,12 @@ Table yern.file_access_control {
   user_id bigint [not null]
   file_id bigint [not null]
   role_id bigint [not null]
+  updated_at timestamp [not null, default: `now()`]
+  created_at timestamp [not null, default: `now()`]
 }
 ref: yern.file_access_control.user_id > yern.users.id
-ref: yern.file_access_control.role_id > yern.role.id
-ref: yern.file_access_control.permission_id > yern.permissions.id
+ref: yern.file_access_control.file_id > yern.files.id
+ref: yern.file_access_control.role_id > yern.roles.id
 
 Enum yern.storage_provider {
   gcs
