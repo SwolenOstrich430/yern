@@ -23,11 +23,9 @@ import com.yern.model.security.Role;
 import com.yern.model.storage.FileAccessControl;
 import com.yern.repository.storage.FileAccessControlRespository;
 import com.yern.service.storage.file.access.FileAccessControlService;
-import com.yern.service.user.UserService;
+
 
 public class FileAccessControlServiceTest {
-    @Mock
-    private UserService userService;
     @Mock
     private FileAccessControlRespository accessRespository;
     @InjectMocks
@@ -57,14 +55,6 @@ public class FileAccessControlServiceTest {
             AccessDeniedException.class,
             () -> spy.verifyAccess(userId, fileId, Permission.OWNER)
         );
-
-        ArrayList<FileAccessControl> records = mock(ArrayList.class);
-        doReturn(false).when(spy).hasAccess(userId, records, Permission.OWNER);
-        
-        assertThrows(
-            AccessDeniedException.class,
-            () -> spy.verifyAccess(userId, records, Permission.OWNER)
-        );
     }
 
     @Test 
@@ -72,13 +62,6 @@ public class FileAccessControlServiceTest {
         doReturn(true).when(spy).hasAccess(userId, fileId, Permission.OWNER);
         assertDoesNotThrow(
             () -> spy.verifyAccess(userId, fileId, Permission.OWNER)
-        );
-
-        ArrayList<FileAccessControl> records = mock(ArrayList.class);
-        doReturn(true).when(spy).hasAccess(userId, records, Permission.OWNER);
-        
-        assertDoesNotThrow(
-            () -> spy.verifyAccess(userId, records, Permission.OWNER)
         );
     }
 

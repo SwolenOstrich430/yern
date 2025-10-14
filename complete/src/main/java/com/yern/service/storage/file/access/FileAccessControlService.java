@@ -83,7 +83,7 @@ public class FileAccessControlService {
      * File and User Ids. Currently an expectation that FileService should be 
      * in charge of validating their existence.
      *      
-     * @return **FileAccessControl** if the role is granted or already exists.
+     * @return **Optional<FileAccessControl>** if the role is granted or already exists.
      * 
      * @throws AccessDeniedException if the requestingUserId does not have an OWNER role for the provided File.  
      * @throws AccessDeniedException if the Role isn't applicable for files.
