@@ -51,7 +51,7 @@ public class FileAccessControlService {
         }
     }
 
-    public void verifyAccess(
+    protected void verifyAccess(
         Long userId,
         List<FileAccessControl> records,
         Permission permission
