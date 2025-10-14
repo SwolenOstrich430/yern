@@ -25,8 +25,6 @@
 
 // Table TODOs: 
 
-
-
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 ///////////Users and Related Tables//////////////
@@ -63,18 +61,18 @@ Table yern.roles {
   identifier text [unique, not null]
 }
 
-Table yern.permissions {
-  id bigint [pk, increment]
-  name varchar [unique, not null]
-  identifier text [unique, not null]
+Enum yern.permission {
+  AUTHORIZE 
+  DELETE 
+  UPDATE 
+  GET 
 }
 
 Table yern.roles_permissions {
   role_id bigint [pk, not null]
-  permission_id bigint [pk, not null]
+  permission "yern".permission [pk, not null]
 }
 ref: yern.roles_permissions.role_id > yern.roles.id 
-ref: yern.roles_permissions.permission_id > yern.permissions.id 
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
@@ -145,6 +143,10 @@ Table yern.sections {
 ref: yern.sections.pattern_id > yern.patterns.id
 ref: yern.sections.counter_id > yern.counters.id
 
+Enum yern.storage_provider {
+  gcs
+}
+
 Table yern.files {
   id bigint [pk, increment]
   storage_provider storage_provider [not null]
@@ -186,10 +188,6 @@ Table yern.file_access_control {
 ref: yern.file_access_control.user_id > yern.users.id
 ref: yern.file_access_control.file_id > yern.files.id
 ref: yern.file_access_control.role_id > yern.roles.id
-
-Enum yern.storage_provider {
-  gcs
-}
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
