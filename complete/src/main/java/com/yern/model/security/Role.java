@@ -1,6 +1,7 @@
 package com.yern.model.security;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,4 +37,12 @@ public class Role {
         orphanRemoval = true
     )
     private Set<RolePermission> permissions;
+
+    // TODO: add unit testing 
+    public Set<Permission> getRawPermissions() {
+        return permissions
+                .stream()
+                .map(permission -> permission.getPermission())
+                .collect(Collectors.toSet());
+    }
 }
