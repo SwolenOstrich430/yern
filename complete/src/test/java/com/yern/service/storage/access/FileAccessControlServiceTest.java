@@ -5,6 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,7 @@ public class FileAccessControlServiceTest {
             when(role.getId()).thenReturn(roleId);
             when(accessRespository.findByFileId(fileId)).thenReturn(new ArrayList<>());
             when(accessRespository.save(accessRecord)).thenReturn(accessRecord);
+            when(role.getRawPermissions()).thenReturn(Set.of(Permission.AUTHORIZE));
 
             mockedStatic.when(() -> FileAccessControl.from(
                 userId2,
@@ -85,7 +88,7 @@ public class FileAccessControlServiceTest {
     }
 
     @Test 
-    public void grantAccess_createsFileAccessControlEntry_ifTheFileDoesNotHaveAnyEntriesInFileAccessControlsAndUserIdsAreTheSame() throws AccessDeniedException {
+    public void grantAccess_createsFileAccessControlEntry_ifTheFileDoesNotHaveAnyEntriesInFileAccessControls() throws AccessDeniedException {
         doNothing()
             .when(spy)
             .verifyAccess(userId, fileId, Permission.AUTHORIZE);
@@ -94,6 +97,7 @@ public class FileAccessControlServiceTest {
             when(role.getId()).thenReturn(roleId);
             when(accessRespository.findByFileId(fileId)).thenReturn(new ArrayList<>());
             when(accessRespository.save(accessRecord)).thenReturn(accessRecord);
+            when(role.getRawPermissions()).thenReturn(Set.of(Permission.AUTHORIZE));
 
             mockedStatic.when(() -> FileAccessControl.from(
                 userId,
@@ -155,6 +159,7 @@ public class FileAccessControlServiceTest {
         
         when(role.getId()).thenReturn(roleId);
         when(accessRespository.findByFileId(fileId)).thenReturn(records);
+        when(role.getRawPermissions()).thenReturn(Set.of(Permission.AUTHORIZE));
 
         assertEquals(records.get(0), FileAccessControl.from(userId2, fileId, roleId));
         FileAccessControl found = spy.grantAccess(userId, userId2, fileId, role).get();
@@ -172,13 +177,15 @@ public class FileAccessControlServiceTest {
 
     @Test 
     public void grantAccess_throwsAcessDeniedError_ifRequestingUserId_doesNotHaveAnAuthorizePermission() throws AccessDeniedException {
+        when(role.getRawPermissions()).thenReturn(Set.of(Permission.AUTHORIZE));
+
         doThrow(AccessDeniedException.class)
             .when(spy)
             .verifyAccess(userId, fileId, Permission.AUTHORIZE);
 
         assertThrows(
             AccessDeniedException.class, 
-            () -> spy.verifyAccess(userId, fileId, Permission.AUTHORIZE)
+            () -> spy.grantAccess(userId, userId2, fileId, role)
         );
     }
 
@@ -191,6 +198,16 @@ public class FileAccessControlServiceTest {
         assertThrows(
             AccessDeniedException.class, 
             () -> spy.verifyAccess(userId, fileId, Permission.AUTHORIZE)
+        );
+    }
+
+    @Test 
+    public void grantAccess_throwsAssertionError_ifInitialRoleForFileAccessDoesNotContainAUTHORIZE() throws AccessDeniedException {
+        when(role.getRawPermissions()).thenReturn(new HashSet<>());
+        
+        assertThrows(
+            AssertionError.class, 
+            () -> spy.grantAccess(userId, userId, fileId, role)
         );
     }
 }

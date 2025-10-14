@@ -35,7 +35,7 @@ public class FileAccessControlService {
         Long fileId,
         Permission permission
     ) throws AccessDeniedException {
-
+        
     }
 
     public Optional<FileAccessControl> grantAccess(
@@ -46,9 +46,11 @@ public class FileAccessControlService {
     ) throws AccessDeniedException {
         List<FileAccessControl> currAccess = accessRepository.findByFileId(fileId);
         
-        if (currAccess.isEmpty() && requestedUserId == requestingUserId) {
-            // assert(role.getRawPermissions().contains(Permission.AUTHORIZE));
-        } else {
+        if (currAccess.isEmpty()) {
+            assert(role.getRawPermissions().contains(Permission.AUTHORIZE));
+        } 
+        
+        if (requestedUserId != requestingUserId) {
             verifyAccess(requestingUserId, fileId, Permission.AUTHORIZE);
         }
         
