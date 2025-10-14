@@ -35,7 +35,27 @@ public class FileAccessControlService {
         Long fileId,
         Permission permission
     ) throws AccessDeniedException {
-        
+        if (!hasAccess(userId, fileId, permission)) {
+            throw new AccessDeniedException(
+                "Provided user " + 
+                userId + " does not have " + 
+                permission.name() + " access to file: " + fileId
+            );
+        }
+    }
+
+    public void verifyAccess(
+        Long userId,
+        List<FileAccessControl> records,
+        Permission permission
+    ) throws AccessDeniedException {
+        if (!hasAccess(userId, records, permission)) {
+            throw new AccessDeniedException(
+                "Provided user " + 
+                userId + " does not have " + 
+                permission.name() + " access"
+            );
+        }
     }
 
     public Optional<FileAccessControl> grantAccess(
@@ -70,6 +90,35 @@ public class FileAccessControlService {
             return matchingRecord;
         }
     }
+
+    public boolean hasAccess(
+        Long userId, 
+        Long fileId, 
+        Permission permission
+    ) {
+        List<FileAccessControl> records = accessRepository.findByUserIdAndFileId(
+            userId, fileId
+        );
+
+        return hasAccess(userId, records, permission);
+    }
+
+    public boolean hasAccess(
+        Long userId, 
+        List<FileAccessControl> records, 
+        Permission permission
+    ) {
+        return records
+                .stream()
+                .filter(record -> record.getUserId() == userId)
+                .anyMatch(record -> {
+                    return record
+                            .getRole()
+                            .getRawPermissions()
+                            .contains(permission);
+                });
+    }
+
     
     
 

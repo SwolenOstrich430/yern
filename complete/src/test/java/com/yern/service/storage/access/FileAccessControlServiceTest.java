@@ -1,15 +1,18 @@
 package com.yern.service.storage.access;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -47,6 +50,86 @@ public class FileAccessControlServiceTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Test 
+    public void verifyAccess_throwsAccessDeniedException_ifHasAccessReturnsFalse() {
+        doReturn(false).when(spy).hasAccess(userId, fileId, Permission.AUTHORIZE);
+        assertThrows(
+            AccessDeniedException.class,
+            () -> spy.verifyAccess(userId, fileId, Permission.AUTHORIZE)
+        );
+
+        ArrayList<FileAccessControl> records = mock(ArrayList.class);
+        doReturn(false).when(spy).hasAccess(userId, records, Permission.AUTHORIZE);
+        
+        assertThrows(
+            AccessDeniedException.class,
+            () -> spy.verifyAccess(userId, records, Permission.AUTHORIZE)
+        );
+    }
+
+    @Test 
+    public void verifyAccess_doesNotThrow_ifHasAccessReturnsTrue() {
+        doReturn(true).when(spy).hasAccess(userId, fileId, Permission.AUTHORIZE);
+        assertDoesNotThrow(
+            () -> spy.verifyAccess(userId, fileId, Permission.AUTHORIZE)
+        );
+
+        ArrayList<FileAccessControl> records = mock(ArrayList.class);
+        doReturn(true).when(spy).hasAccess(userId, records, Permission.AUTHORIZE);
+        
+        assertDoesNotThrow(
+            () -> spy.verifyAccess(userId, records, Permission.AUTHORIZE)
+        );
+    }
+
+    @Test 
+    public void hasAccess_returnsFalse_ifAMatchingFileAccessControlsRecordDoesNotExist() {
+        when(accessRespository.findByUserIdAndFileId(
+            userId, fileId
+        ))
+        .thenReturn(new ArrayList<>());
+        
+        assertFalse(
+            service.hasAccess(userId, fileId, Permission.GET)
+        );
+    }
+    
+    @Test 
+    public void verifyAcess_returnsFalse_ifCorrespondingFileAccessControlsHasMismatchOnPermissions() {
+        ArrayList<FileAccessControl> records = new ArrayList<>();
+        records.add(accessRecord);
+
+        when(accessRecord.getRole()).thenReturn(role);
+        when(accessRecord.getUserId()).thenReturn(userId);
+        when(role.getRawPermissions()).thenReturn(Set.of(Permission.GET));
+        when(accessRespository.findByUserIdAndFileId(
+            userId, fileId
+        ))
+        .thenReturn(records);
+        
+        assertFalse(
+            service.hasAccess(userId, fileId, Permission.AUTHORIZE)
+        );
+    }
+    
+    @Test 
+    public void verifyAccess_returnsTrue_ifAccessFileControlsRecord_hasMatchingPermissions() {
+        ArrayList<FileAccessControl> records = new ArrayList<>();
+        records.add(accessRecord);
+
+        when(accessRecord.getRole()).thenReturn(role);
+        when(accessRecord.getUserId()).thenReturn(userId);
+        when(role.getRawPermissions()).thenReturn(Set.of(Permission.AUTHORIZE));
+        when(accessRespository.findByUserIdAndFileId(
+            userId, fileId
+        ))
+        .thenReturn(records);
+        
+        assertTrue(
+            service.hasAccess(userId, fileId, Permission.AUTHORIZE)
+        );
     }
 
     @Test 
