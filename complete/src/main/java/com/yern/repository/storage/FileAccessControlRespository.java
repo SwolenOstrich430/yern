@@ -10,4 +10,5 @@ import com.yern.model.storage.FileAccessControl;
 @Repository
 public interface FileAccessControlRespository extends JpaRepository<FileAccessControl, Long> {
     List<FileAccessControl> findByFileId(Long fileId);
+    List<FileAccessControl> findByUserIdAndFileId(Long userId, Long fileId);
 }
