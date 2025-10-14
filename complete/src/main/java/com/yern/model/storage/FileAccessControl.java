@@ -4,11 +4,16 @@ import java.time.LocalDateTime;
 
 import org.springframework.cglib.core.Local;
 
+import com.yern.model.security.Role;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -32,7 +37,10 @@ public class FileAccessControl {
         FileAccessControl accessControl = new FileAccessControl();
         accessControl.setUserId(userId);
         accessControl.setFileId(fileId);
-        accessControl.setRoleId(roleId);
+        
+        Role role = new Role();
+        role.setId(roleId);
+        accessControl.setRole(role);
 
         return accessControl;
     }
@@ -42,8 +50,9 @@ public class FileAccessControl {
     @Column 
     private Long userId;
 
-    @Column 
-    private Long roleId;
+    @ManyToOne(fetch = FetchType.EAGER) 
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Column 
     private Long fileId;
@@ -79,7 +88,7 @@ public class FileAccessControl {
         FileAccessControl other = (FileAccessControl) obj; 
 
         return (
-            this.roleId == other.getRoleId() && 
+            this.getRole().getId() == other.getRole().getId() && 
             this.fileId == other.getFileId() && 
             this.userId == other.getUserId()
         );
@@ -89,7 +98,7 @@ public class FileAccessControl {
     public int hashCode() {
         return (
             31 * (
-                Long.hashCode(roleId) +
+                Long.hashCode(role.getId()) +
                 Long.hashCode(fileId) + 
                 Long.hashCode(userId)
             )
