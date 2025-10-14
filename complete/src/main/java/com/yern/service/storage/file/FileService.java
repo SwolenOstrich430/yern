@@ -26,6 +26,7 @@ import com.yern.model.storage.UploadFileException;
 import com.yern.repository.storage.FileRepository;
 import com.yern.service.messaging.MessagePublisher;
 import com.yern.service.storage.StorageProvider;
+import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 
 import io.jsonwebtoken.lang.Assert;
 
