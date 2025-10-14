@@ -18,8 +18,8 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.MediaType;
 
 import com.yern.service.storage.NotUniqueException;
-import com.yern.service.storage.file.FileProcessor;
-import com.yern.service.storage.file.GenericFileProcessor;
+import com.yern.service.storage.file.processing.FileProcessor;
+import com.yern.service.storage.file.processing.GenericFileProcessor;
 import com.yern.exceptions.NotFoundException;
 
 public class GenericFileProcessorTest {

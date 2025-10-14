@@ -2,7 +2,7 @@ package com.yern.model.storage;
 
 import org.springframework.http.MediaType;
 
-import com.yern.service.storage.file.PDFProcessor;
+import com.yern.service.storage.file.processing.PDFProcessor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

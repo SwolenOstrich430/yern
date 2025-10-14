@@ -1,4 +1,4 @@
-package com.yern.service.storage.file;
+package com.yern.service.storage.file.processing;
 
 import java.io.File;
 import java.io.IOException;

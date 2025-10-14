@@ -1,4 +1,4 @@
-package com.yern.service.storage.file;
+package com.yern.service.storage.file.processing;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.yern.exceptions.NotFoundException;
 import com.yern.service.storage.NotUniqueException;
-import com.yern.service.storage.file.processing.FileProcessor;
-import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 
 @Component 
 public class GenericFileProcessor implements FileProcessorOrchestrator {

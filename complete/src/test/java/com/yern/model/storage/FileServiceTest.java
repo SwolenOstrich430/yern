@@ -24,9 +24,9 @@ import com.yern.model.pattern.Section;
 import com.yern.repository.storage.FileRepository;
 import com.yern.service.storage.NotUniqueException;
 import com.yern.service.storage.StorageProvider;
-import com.yern.service.storage.file.FileProcessorOrchestrator;
 import com.yern.service.storage.file.FileService;
-import com.yern.service.storage.file.GenericFileProcessor;
+import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
+import com.yern.service.storage.file.processing.GenericFileProcessor;
 
 public class FileServiceTest {
     private FileRepository fileRepository;
