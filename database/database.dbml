@@ -56,9 +56,21 @@ ref: yern.user_authentications.user_id > yern.users.id
 
 Table yern.roles {
   id bigint [pk, increment]
-  name text [unique, not null]
-  // human-readable id for the role. E.g., admin. 
-  identifier text [unique, not null]
+  resource yern.resource_type [unique, not null]
+  type yern.role_type [unique, not null]
+  display_name varchar [unique, not null]
+}
+
+Enum yern.resource_type {
+  SECTION
+  FILE 
+  PATTERN
+}
+
+Enum yern.role_type {
+  OWNER 
+  EDITOR 
+  READER 
 }
 
 Enum yern.permission {
