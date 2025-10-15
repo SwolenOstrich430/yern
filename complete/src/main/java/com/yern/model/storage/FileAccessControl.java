@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.cglib.core.Local;
 
-import com.yern.model.security.Role;
+import com.yern.model.security.authorization.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
