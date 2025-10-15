@@ -1,5 +1,11 @@
 package com.yern.model.security;
 
 public enum Permission {
-    OWNER, GET, UPDATE, DELETE
+    OWN,
+    GET, 
+    UPDATE, 
+    REQUEST_DELETE,
+    CONFIRM_DELETE,
+    DENY_DELETE,
+    AUTHORIZE
 }
