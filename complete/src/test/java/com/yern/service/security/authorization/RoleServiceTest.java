@@ -35,6 +35,9 @@ public class RoleServiceTest {
     private ResourceType resourceType;
 
     @Mock 
+    private RoleType roleType;
+
+    @Mock 
     private Role role;
 
     private final Long roleId = 1L;
@@ -63,7 +66,7 @@ public class RoleServiceTest {
     }
 
     @Test 
-    public void getRoleById_callsRoleRepository_findByResource() {
+    public void findRolesByResource_callsRoleRepository_findByResource() {
         List<Role> roles = new ArrayList<>();
         roles.add(role);
 
@@ -78,6 +81,27 @@ public class RoleServiceTest {
             times(1)
         )
         .findByResource(resourceType);
+    }
+
+    @Test 
+    public void getRoleByResourceAndType_callsRoleRepository_getRoleByResourceAndType() {
+        when(
+            roleRepository.getRoleByResourceAndType(
+                resourceType,
+                roleType
+            )
+        )
+        .thenReturn(Optional.of(role));
+        
+        Optional<Role> foundRole = service.getRoleByResourceAndType(
+            resourceType, roleType
+        );
+                
+        verify(
+            roleRepository, 
+            times(1)
+        )
+        .getRoleByResourceAndType(resourceType, roleType);
     }
 
     @Test 

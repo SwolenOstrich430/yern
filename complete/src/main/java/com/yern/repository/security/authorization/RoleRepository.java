@@ -8,9 +8,15 @@ import org.springframework.stereotype.Repository;
 
 import com.yern.model.security.ResourceType;
 import com.yern.model.security.authorization.Role;
+import com.yern.model.security.authorization.RoleType;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> getRoleById(Long roleId);
     List<Role> findByResource(ResourceType resource);
+    List<Role> findByType(RoleType type);
+    Optional<Role> getRoleByResourceAndType(
+        ResourceType resource,
+        RoleType type
+    );
 }

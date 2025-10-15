@@ -44,6 +44,19 @@ public class RoleService {
     }
 
     /**
+     * 
+     * @param role
+    */
+    public Optional<Role> getRoleByResourceAndType(
+        ResourceType resource,
+        RoleType type 
+    ) {
+        return roleRepository.getRoleByResourceAndType(
+            resource, type
+        );
+    }
+
+    /**
      * TODO: move this to Role
      * TODO: put permission mappings in variables attached to Roles
      * 
