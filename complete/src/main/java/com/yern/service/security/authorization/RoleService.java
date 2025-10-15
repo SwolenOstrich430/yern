@@ -44,7 +44,8 @@ public class RoleService {
     }
 
     /**
-     * TODO: move this to Role?
+     * TODO: move this to Role
+     * TODO: put permission mappings in variables attached to Roles
      * 
      * @param **Role** role - a role with or without RolePermissions set
      * 
