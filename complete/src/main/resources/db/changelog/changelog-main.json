@@ -5,6 +5,11 @@
                 "file": "/db/changelog/common/audit/initial-types.sql"
             }
         },
+         {
+            "include": {
+                "file": "/db/changelog/common/helper/initial-factory-functions.sql"
+            }
+        },
         {
             "include": {
                 "file": "/db/changelog/user/initial-tables.sql"
