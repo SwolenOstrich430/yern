@@ -2,7 +2,12 @@
     "databaseChangeLog":[
         {
             "include": {
-                "file": "/db/changelog/storage/initial-tables.sql"
+                "file": "/db/changelog/common/audit/initial-types.sql"
+            }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/user/initial-tables.sql"
             }
         }
     ]
