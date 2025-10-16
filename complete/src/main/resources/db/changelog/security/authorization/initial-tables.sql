@@ -1,9 +1,10 @@
 create table if not exists yern.roles (
     "id" bigserial primary key,
-    "resource" yern.resource_type unique not null,
-    "type" yern.role_type unique not null,
+    "resource" yern.resource_type not null,
+    "type" yern.role_type not null,
     "display_name" varchar(100) unique not null,
-    "audit_timestamps" audit_timestamps
+    "audit_timestamps" audit_timestamps,
+    unique("resource", "type")
 );
 
 create table if not exists yern.roles_permissions (
