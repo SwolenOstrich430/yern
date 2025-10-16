@@ -5,6 +5,12 @@ create table if not exists yern.patterns(
     "audit_timestamps" audit_timestamps
 );
 
+CREATE TABLE "yern"."users_patterns" (
+  "user_id" bigint not null references users(id),
+  "pattern_id" bigint not null references patterns(id),
+  PRIMARY KEY ("user_id", "pattern_id")
+);
+
 create table if not exists yern.counters(
     "id" bigserial primary key,
     "value" bigint not null default 0,
