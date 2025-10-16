@@ -12,6 +12,16 @@
         },
         {
             "include": {
+                "file": "/db/changelog/security/authorization/initial-types.sql"
+            }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/security/authorization/initial-tables.sql"
+            }
+        },
+        {
+            "include": {
                 "file": "/db/changelog/user/initial-tables.sql"
             }
         }
