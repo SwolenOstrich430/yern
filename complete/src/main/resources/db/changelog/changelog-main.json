@@ -34,6 +34,11 @@
             "include": {
                 "file": "/db/changelog/storage/initial-types.sql"
             }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/storage/initial-tables.sql"
+            }
         }
     ]
  }
