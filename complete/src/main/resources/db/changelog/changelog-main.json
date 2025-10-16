@@ -29,6 +29,11 @@
             "include": {
                 "file": "/db/changelog/security/authentication/initial-tables.sql"
             }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/storage/initial-types.sql"
+            }
         }
     ]
  }

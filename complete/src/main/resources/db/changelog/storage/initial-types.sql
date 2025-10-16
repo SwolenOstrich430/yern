@@ -1,0 +1,1 @@
+select create_enum('storage_provider', '{GCS}');
