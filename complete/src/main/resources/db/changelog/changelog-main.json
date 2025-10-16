@@ -2,7 +2,7 @@
     "databaseChangeLog":[
         {
             "include": {
-                "file": "/db/changelog/initial-schema.sql"
+                "file": "/db/changelog/storage/initial-tables.sql"
             }
         }
     ]
