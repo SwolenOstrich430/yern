@@ -12,6 +12,11 @@
         },
         {
             "include": {
+                "file": "/db/changelog/common/extension/initial.sql"
+            }
+        },
+        {
+            "include": {
                 "file": "/db/changelog/user/initial-tables.sql"
             }
         },
@@ -38,6 +43,11 @@
         {
             "include": {
                 "file": "/db/changelog/storage/initial-tables.sql"
+            }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/pattern/initial-tables.sql"
             }
         }
     ]
