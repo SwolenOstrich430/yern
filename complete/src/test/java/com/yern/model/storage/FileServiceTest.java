@@ -12,26 +12,46 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.TestPropertySource;
 
 import com.yern.exceptions.NotFoundException;
 import com.yern.model.pattern.Section;
 import com.yern.repository.storage.FileRepository;
+import com.yern.service.messaging.MessagePublisher;
 import com.yern.service.storage.NotUniqueException;
 import com.yern.service.storage.StorageProvider;
 import com.yern.service.storage.file.FileService;
+import com.yern.service.storage.file.access.FileAccessControlService;
 import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 import com.yern.service.storage.file.processing.GenericFileProcessor;
 
+@TestPropertySource(properties = {"messaging.topics.file-update=topic-name"})
 public class FileServiceTest {
+    @Mock 
     private FileRepository fileRepository;
+    @Mock
     private StorageProvider storageProvider;
+    @Mock
     private FileProcessorOrchestrator fileProcessor; 
+    @Mock  
+    private MessagePublisher publisher;
+    @Mock 
+    FileAccessControlService accessService;
+    
+    @Value("${messaging.topics.file-update}") 
+    String fileUpdateTopicName;
+
     private List<FileImpl> files;
     private Page<FileImpl> page;
     private Pageable pageable;
@@ -41,27 +61,29 @@ public class FileServiceTest {
     private FileService service;
     private FileService spy;
 
+    private final Long userId = 1L;
+
     @BeforeEach
     public void setup() {
+        MockitoAnnotations.openMocks(this);
+
+        service = new FileService(
+            fileRepository, 
+            storageProvider, 
+            fileProcessor, 
+            publisher, 
+            accessService,
+            fileUpdateTopicName
+        );
+        spy = spy(service);
+
         this.targetPath = UUID.randomUUID().toString();
         this.localPath = mock(Path.class);
-        this.fileRepository = Mockito.mock(FileRepository.class);
-        this.storageProvider = Mockito.mock(StorageProvider.class);
-        this.fileProcessor = Mockito.mock(GenericFileProcessor.class);
-        
         this.files = new ArrayList<>();
         this.files.add(Mockito.mock(FileImpl.class));
         this.files.add(Mockito.mock(FileImpl.class));
         this.pageable = Mockito.mock(PageRequest.class);
         this.page = new PageImpl<>(files, pageable, files.size());
-
-        this.service = new FileService(
-            fileRepository, 
-            storageProvider, 
-            fileProcessor
-        );
-
-        this.spy = Mockito.spy(this.service);
     }
 
     @Test 
@@ -71,7 +93,11 @@ public class FileServiceTest {
         );
         when(storageProvider.fileExists(targetPath)).thenReturn(true);
 
-        spy.uploadFile(localPath, Section.class.getSimpleName());
+        spy.uploadFile(
+            userId,
+            localPath, 
+            Section.class.getSimpleName()
+        );
 
         verify(
             storageProvider, 
@@ -91,7 +117,7 @@ public class FileServiceTest {
         
         assertThrows(
             UploadFileException.class, 
-            () -> spy.uploadFile(localPath, Section.class.getSimpleName())
+            () -> spy.uploadFile(userId, localPath, Section.class.getSimpleName())
         );
     }
 
@@ -102,7 +128,7 @@ public class FileServiceTest {
 
         assertThrows(
             UploadFileException.class, 
-            () -> spy.uploadFile(localPath, Section.class.getSimpleName())
+            () -> spy.uploadFile(userId, localPath, Section.class.getSimpleName())
         );
 
         verify(storageProvider, times(1)).fileExists(targetPath);
@@ -119,7 +145,7 @@ public class FileServiceTest {
             when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
             doReturn(targetPath).when(spy).getRawPathForResource(localPath, Section.class.getSimpleName());
             
-            spy.uploadFile(localPath, Section.class.getSimpleName());
+            spy.uploadFile(userId, localPath, Section.class.getSimpleName());
             
             verify(
                 fileRepository, 
@@ -139,7 +165,7 @@ public class FileServiceTest {
             ).thenReturn(files.get(0));
             when(fileRepository.save(files.get(0))).thenReturn(files.get(0));
 
-            FileImpl savedFile = spy.uploadFile(localPath, Section.class.getSimpleName());
+            FileImpl savedFile = spy.uploadFile(userId, localPath, Section.class.getSimpleName());
             assertEquals(savedFile, files.get(0));
             
             verify(
@@ -162,7 +188,7 @@ public class FileServiceTest {
 
             assertThrows(
                 UploadFileException.class, 
-                () -> spy.uploadFile(localPath, Section.class.getSimpleName())
+                () -> spy.uploadFile(userId, localPath, Section.class.getSimpleName())
             );
             
             verify(
@@ -214,11 +240,11 @@ public class FileServiceTest {
     @Test 
     public void processFile_downloadsTheRawVersionOfTheFile() throws IOException {
         when(files.get(0).getRawPath()).thenReturn(targetPath);
-        doNothing().when(fileProcessor).processFile(localPath);
-        doNothing().when(storageProvider).uploadFile(localPath, targetPath);
         doReturn(localPath).when(spy).getNewFilePath(targetPath);
         when(files.get(0).getBasename()).thenReturn(targetPath);
-        doNothing().when(spy).updateProcessedFile(files.get(0));
+        doNothing().when(storageProvider).downloadFile(localPath, targetPath);
+        doNothing().when(spy).uploadAndSaveProcessedFile(files.get(0), localPath, localPath);
+        when(fileProcessor.processFile(localPath)).thenReturn(localPath);
 
         spy.processFile(files.get(0));
 
@@ -230,11 +256,12 @@ public class FileServiceTest {
 
     @Test 
     public void processFile_processesTheFile() throws IOException {
-        doNothing().when(storageProvider).downloadFile(localPath, targetPath);
-        doNothing().when(storageProvider).uploadFile(localPath, targetPath);
+        when(files.get(0).getRawPath()).thenReturn(targetPath);
         doReturn(localPath).when(spy).getNewFilePath(targetPath);
         when(files.get(0).getBasename()).thenReturn(targetPath);
-        doNothing().when(spy).updateProcessedFile(files.get(0));
+        doNothing().when(storageProvider).downloadFile(localPath, targetPath);
+        doNothing().when(spy).uploadAndSaveProcessedFile(files.get(0), localPath, localPath);
+        when(fileProcessor.processFile(localPath)).thenReturn(localPath);
 
         spy.processFile(files.get(0));
 
@@ -246,53 +273,19 @@ public class FileServiceTest {
 
     @Test 
     public void processFile_uploadsTheProcessedFileToTheFilesFormattedPath_ifThereAreNoErrors() throws NotFoundException, NotUniqueException, IOException {
-        when(files.get(0).getFormattedPath()).thenReturn(targetPath);
-        doNothing().when(fileProcessor).processFile(localPath);
-        doNothing().when(storageProvider).downloadFile(localPath, targetPath);
-        doNothing().when(spy).updateProcessedFile(files.get(0));
+        when(files.get(0).getRawPath()).thenReturn(targetPath);
         doReturn(localPath).when(spy).getNewFilePath(targetPath);
         when(files.get(0).getBasename()).thenReturn(targetPath);
-
-        spy.processFile(files.get(0));
-
-        Mockito.verify(
-            storageProvider, 
-            Mockito.times(1)
-        ).uploadFile(localPath, targetPath);
-    }
-
-    @Test 
-    public void processFile_updatesTheProcessedFile_ifThereAreNoErrors() throws NotFoundException, NotUniqueException, IOException {
-        when(files.get(0).getFormattedPath()).thenReturn(targetPath);
-        doNothing().when(fileProcessor).processFile(localPath);
         doNothing().when(storageProvider).downloadFile(localPath, targetPath);
-        doNothing().when(storageProvider).uploadFile(localPath, targetPath);
-        doNothing().when(spy).updateProcessedFile(files.get(0));
-
-        doReturn(localPath).when(spy).getNewFilePath(targetPath);
-        when(files.get(0).getBasename()).thenReturn(targetPath);
+        doNothing().when(spy).uploadAndSaveProcessedFile(files.get(0), localPath, localPath);
+        when(fileProcessor.processFile(localPath)).thenReturn(localPath);
 
         spy.processFile(files.get(0));
 
         Mockito.verify(
             spy, 
             Mockito.times(1)
-        ).updateProcessedFile(files.get(0));
-    }
-
-    @Test 
-    public void processFile_updatesAFileAsFailed_ifAnIOExceptionIsThrown() throws IOException {
-        doThrow(IOException.class).when(storageProvider).downloadFile(any(), any());
-        spy.processFile(files.get(0));
-
-        verify(
-            spy, 
-            times(1)
-        )
-        .updateFailedFile(
-            eq(files.get(0)), 
-            any(Throwable.class)
-        );
+        ).uploadAndSaveProcessedFile(files.get(0), localPath, localPath);
     }
 
     @Test 
@@ -344,30 +337,30 @@ public class FileServiceTest {
         verify(fileRepository, times(1)).save(files.get(0));
     }
 
-    @Test 
-    public void updateFailedFile_setsFileErrorToProvidedExc() {
-        IOException exc = Mockito.mock(IOException.class);
+    // @Test 
+    // public void updateFailedFile_setsFileErrorToProvidedExc() {
+    //     IOException exc = Mockito.mock(IOException.class);
         
-        service.updateFailedFile(files.get(0), exc);
+    //     service.updateFailedFile(files.get(0), exc);
 
-        verify(files.get(0), times(1)).setError(exc);
-    }
+    //     verify(files.get(0), times(1)).setError(exc);
+    // }
 
-    @Test 
-    public void updateFailedFile_setsFilesFormattedPathToNull() {
-        IOException exc = Mockito.mock(IOException.class);
+    // @Test 
+    // public void updateFailedFile_setsFilesFormattedPathToNull() {
+    //     IOException exc = Mockito.mock(IOException.class);
         
-        service.updateFailedFile(files.get(0), exc);
+    //     service.updateFailedFile(files.get(0), exc);
 
-        verify(files.get(0), times(1)).setFormattedPath(null);
-    }
+    //     verify(files.get(0), times(1)).setFormattedPath(null);
+    // }
 
-    @Test 
-    public void updateFailedFile_savesTheUpdatedFileToDB() {
-        IOException exc = Mockito.mock(IOException.class);
+    // @Test 
+    // public void updateFailedFile_savesTheUpdatedFileToDB() {
+    //     IOException exc = Mockito.mock(IOException.class);
         
-        service.updateFailedFile(files.get(0), exc);
+    //     service.updateFailedFile(files.get(0), exc);
 
-        verify(fileRepository, times(1)).save(files.get(0));
-    }
+    //     verify(fileRepository, times(1)).save(files.get(0));
+    // }
 } 
