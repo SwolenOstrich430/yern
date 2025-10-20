@@ -5,7 +5,12 @@
                 "file": "/db/changelog/common/audit/initial-types.sql"
             }
         },
-         {
+        {
+            "include": {
+                "file": "/db/changelog/common/audit/initial-functions.sql"
+            }
+        },
+        {
             "include": {
                 "file": "/db/changelog/common/helper/initial-factory-functions.sql"
             }
@@ -32,11 +37,6 @@
         },
         {
             "include": {
-                "file": "/db/changelog/security/authorization/initial-data.sql"
-            }
-        },
-        {
-            "include": {
                 "file": "/db/changelog/security/authentication/initial-tables.sql"
             }
         },
@@ -53,6 +53,16 @@
         {
             "include": {
                 "file": "/db/changelog/pattern/initial-tables.sql"
+            }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/common/audit/initial-triggers.sql"
+            }
+        },
+        {
+            "include": {
+                "file": "/db/changelog/security/authorization/initial-data.sql"
             }
         }
     ]
