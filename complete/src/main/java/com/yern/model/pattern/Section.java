@@ -3,6 +3,7 @@ package com.yern.model.pattern;
 
 import java.time.LocalDateTime;
 
+import com.yern.model.common.AuditTimestamp;
 import com.yern.model.storage.FileImpl;
 
 import jakarta.persistence.Column;
@@ -44,19 +45,5 @@ public class Section {
     @OneToOne 
     private Counter counter;
     @Column
-    private LocalDateTime createdAt;
-    @Column
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-            updatedAt = createdAt;
-        }
-
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-    }
+    private AuditTimestamp auditTimestamps;
 }

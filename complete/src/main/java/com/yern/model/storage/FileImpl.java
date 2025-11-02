@@ -9,6 +9,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import com.yern.mapper.storage.file.StorageProviderTypeConverter;
+import com.yern.model.common.AuditTimestamp;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
@@ -47,7 +48,6 @@ public class FileImpl implements Serializable {
     private Long id;
     @Column 
     @Convert(converter = StorageProviderTypeConverter.class)
-    // @Enumerated(EnumType.STRING)
     private StorageProviderType storageProvider;
     @Column 
     private String rawPath;
@@ -61,25 +61,11 @@ public class FileImpl implements Serializable {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "error", columnDefinition = "jsonb")
     private ErrorLog error;
-    @Column(columnDefinition = "timestamp default now()")
-    private LocalDateTime createdAt;
-    @Column(columnDefinition = "timestamp default now()")
-    private LocalDateTime updatedAt;
+    @Column
+    private AuditTimestamp auditTimestamps;
 
     private static final String RAW_DIR = "raw";
     private static final String FORMATTED_DIR = "formatted";
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-            updatedAt = createdAt;
-        }
-
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-    }
 
     public boolean hasError() {
         return (

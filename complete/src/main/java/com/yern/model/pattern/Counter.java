@@ -2,15 +2,13 @@ package com.yern.model.pattern;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.event.spi.LockEventListener;
-import org.springframework.cglib.core.Local;
+import com.yern.model.common.AuditTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,23 +28,8 @@ public class Counter {
     private Long value;
 
     @Column 
-    private LocalDateTime createdAt;
-
-    @Column 
-    private LocalDateTime updatedAt;
+    private AuditTimestamp auditTimestamps;
 
     @Column 
     private LocalDateTime lastResetAt;
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-            updatedAt = createdAt;
-        }
-
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-    }
 }

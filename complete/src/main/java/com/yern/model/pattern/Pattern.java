@@ -3,6 +3,8 @@ package com.yern.model.pattern;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.yern.model.common.AuditTimestamp;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,11 +45,7 @@ public class Pattern {
 
     @Basic
     @Column
-    private LocalDateTime createdAt;
-    
-    @Basic
-    @Column
-    private LocalDateTime updatedAt;
+    private AuditTimestamp auditTimestamps;
 
     public Pattern(
         Long id,
