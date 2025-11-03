@@ -1,7 +1,6 @@
 package com.yern.service.security.authorization;
 
 import com.yern.model.security.ResourceType;
-import com.yern.model.security.authorization.Permission;
 import com.yern.model.security.authorization.Role;
 import com.yern.model.security.authorization.RoleType;
 import com.yern.repository.security.authorization.RoleRepository;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class RoleService {
@@ -51,8 +49,6 @@ public class RoleService {
         ResourceType resource,
         RoleType type 
     ) {
-        return roleRepository.getRoleByResourceAndType(
-            resource, type
-        );
+        return roleRepository.getRoleByResourceAndType(resource, type);
     }
 }
