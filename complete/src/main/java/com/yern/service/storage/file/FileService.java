@@ -1,6 +1,7 @@
 package com.yern.service.storage.file;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -19,6 +20,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.yern.common.file.FileUtil;
 import com.yern.dto.storage.ProcessFileRequest;
 import com.yern.model.storage.ErrorLog;
 import com.yern.model.storage.FileImpl;
@@ -26,6 +28,7 @@ import com.yern.model.storage.UploadFileException;
 import com.yern.repository.storage.FileRepository;
 import com.yern.service.messaging.MessagePublisher;
 import com.yern.service.storage.StorageProvider;
+import com.yern.service.storage.file.access.FileAccessControlService;
 import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 
 import io.jsonwebtoken.lang.Assert;
@@ -37,6 +40,7 @@ public class FileService {
     private StorageProvider storageProvider;
     private FileProcessorOrchestrator fileProcessor;
     private MessagePublisher messagePublisher;
+    private FileAccessControlService accessService;
     private String fileUpdateTopicName; 
 
 
@@ -45,17 +49,24 @@ public class FileService {
         @Autowired StorageProvider storageProvider,
         @Autowired FileProcessorOrchestrator fileProcessor,
         @Autowired MessagePublisher messagePublisher,
-        @Value("${messaging.topics.file-update}") 
-        String fileUpdateTopicName
+        @Autowired FileAccessControlService accessService,
+        @Value("${messaging.topics.file-update}") String topicName
     ) {
         this.fileRepository = fileRepository;
         this.storageProvider = storageProvider;
         this.fileProcessor = fileProcessor;
         this.messagePublisher = messagePublisher;
-        this.fileUpdateTopicName = fileUpdateTopicName;
+        this.accessService = accessService;
+        this.fileUpdateTopicName = topicName;
     }
 
-    public FileImpl uploadFile(MultipartFile file, String relatedClass) throws UploadFileException {
+    // TODO: change related class to an actual class
+    // TODO: or do resource type
+    public FileImpl uploadAndSaveFile(
+        Long userId,
+        MultipartFile file, 
+        String relatedClass
+    ) throws UploadFileException {
         Path filePath = null;
         FileImpl uploadedFile = null; 
 
@@ -65,7 +76,7 @@ public class FileService {
             file.transferTo(targetFile);
             assert(targetFile.exists() && file.getSize() > 0);
             
-            uploadedFile = uploadFile(filePath, relatedClass);
+            uploadedFile = uploadAndSaveFile(userId, filePath, relatedClass);
         } catch(IOException | AssertionError exc) {
             throw new UploadFileException();
         }
@@ -73,31 +84,58 @@ public class FileService {
         return uploadedFile;
     }
 
-    public FileImpl uploadFile(Path localPath, String relatedClass) throws UploadFileException {
-        if (!Files.exists(localPath)) {
-            throw new UploadFileException("File: " + localPath + " does not exist.");
-        }
+    // TODO: add OWNER entry in uploadFile 
+    // TODO: verify OWNER entry was created successfully
+    public FileImpl uploadAndSaveFile(
+        Long userId, 
+        Path localPath, 
+        String relatedClass
+    ) throws UploadFileException, FileNotFoundException {
+        FileUtil.validateFileExists(localPath);
+        String targetPath = uploadFileRaw(localPath, relatedClass);
+        FileImpl returnFile = saveFile(userId, targetPath);
+        sendUploadFileEvent(returnFile);
+        
+        return returnFile;  
+    }
 
-        String targetPath = getRawPathForResource(localPath, relatedClass);
+    public String uploadFileRaw(
+        Path localPath, 
+        String relatedClass
+    ) throws UploadFileException {
+        String targetPath = getRawPathForResource(
+            localPath, relatedClass
+        );
+        
         try {
             storageProvider.uploadFile(localPath, targetPath);
-            assert(storageProvider.fileExists(targetPath));
-        } catch(IOException | AssertionError exc) {
+            if (!storageProvider.fileExists(targetPath)) {
+                throw new UploadFileException();
+            }
+        } catch(IOException exc) {
             // TODO: add logging 
             // TODO: create standard message for exception 
             throw new UploadFileException();
         }
 
-        FileImpl returnFile; 
-        try {
-            returnFile = fileRepository.save(FileImpl.from(targetPath));
-        } catch(Exception exc) {
-            // TODO: delete the file?
+        return targetPath;
+    }
+
+    public FileImpl saveFile(
+        Long userId,
+        String targetPath
+    ) throws AccessDeniedException, UploadFileException {
+        FileImpl createdFile = fileRepository.save(
+            FileImpl.from(targetPath)
+        );
+
+        if (createdFile == null || createdFile.getId() == null || 
+            createdFile.getId() <= 0) {
             throw new UploadFileException();
         }
 
-        sendUploadFileEvent(returnFile);
-        return returnFile;  
+        accessService.createOwner(userId, createdFile.getId());
+        return createdFile;
     }
 
     public void sendUploadFileEvent(FileImpl file) {
@@ -130,7 +168,6 @@ public class FileService {
         processFile(file);
     }
 
-    // TODO: set the etag 
     // TODO: add some reporting on matching etag
     // TODO: set the public url
     public void processFile(FileImpl file) {
