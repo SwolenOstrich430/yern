@@ -3,5 +3,6 @@ CREATE TABLE yern.users (
     "email" text unique not null,
     "first_name" varchar(20) NOT NULL,
     "last_name" varchar(20) NOT NULL,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+"updated_at" timestamp without time zone 
 );

@@ -16,8 +16,6 @@ begin
         value_list := value_list || quote_literal(enum_values[i]);
     end loop;
 
-    execute format('create type %I AS ENUM (%s)', enum_name, value_list);
-    RAISE NOTICE 'Enum type % created with initial values.', enum_name;
-
+    execute format('create type %I as enum (%s)', enum_name, value_list);
 end;
 $$ language plpgsql;

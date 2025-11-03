@@ -2,7 +2,8 @@ create table if not exists yern.patterns(
     "id" bigserial primary key,
     "name" varchar(100) not null,
     "description" varchar(255) not null,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );
 
 create table if not exists yern.users_patterns (
@@ -16,7 +17,8 @@ create table if not exists yern.counters(
     "value" bigint not null default 0,
     "is_dirty" bool not null default false,
     "last_reset_at" timestamp,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );
 
 create table if not exists yern.counter_logs(
@@ -45,7 +47,8 @@ create table if not exists yern.sections(
         bigint 
         references yern.counters(id) 
         on delete cascade,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );
 
 create table if not exists yern.counters(
@@ -53,5 +56,6 @@ create table if not exists yern.counters(
     "value" bigint not null default 0,
     "is_dirty" boolean not null default false,
     "last_reset_at" timestamp without time zone,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );

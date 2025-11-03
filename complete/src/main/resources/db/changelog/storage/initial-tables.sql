@@ -6,7 +6,8 @@ create table if not exists yern.files (
     "public_url" text,
     "etag" text,
     "error" jsonb,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );
 
 create table if not exists yern.file_access_control (
@@ -14,5 +15,6 @@ create table if not exists yern.file_access_control (
     "user_id" bigint not null references users(id) on delete cascade,
     "file_id" bigint not null references files(id) on delete cascade,
     "role_id" bigint not null references roles(id) on delete cascade,
-    "audit_timestamps" audit_timestamps
+    "created_at" timestamp without time zone,
+    "updated_at" timestamp without time zone 
 );
