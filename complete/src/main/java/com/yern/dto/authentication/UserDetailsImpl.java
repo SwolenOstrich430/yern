@@ -1,28 +1,23 @@
 package com.yern.dto.authentication;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
-import java.util.List;
 
-@Setter
-@Getter
-public class UserDetailsImpl implements UserDetails {
-    private String username;
-    private String password;
+public class UserDetailsImpl extends User {
+    private final Long userId;
 
-    public UserDetailsImpl(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public UserDetailsImpl(
+        String username, 
+        String password, 
+        Collection<? extends GrantedAuthority> authorities, 
+        Long userId
+    ) {
+        super(username, password, authorities);
+        this.userId = userId;
     }
 
-    public UserDetailsImpl() {}
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+    public Long getUserId() {
+        return userId;
     }
 }
