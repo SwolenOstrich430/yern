@@ -3,6 +3,9 @@ package com.yern.model.security.authorization;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+
 import com.yern.model.security.ResourceType;
 
 import jakarta.persistence.CascadeType;
@@ -32,14 +35,16 @@ public class Role {
     private Long id;
 
     @Column 
-    private String name; 
+    private String displayName; 
     
-    @Column 
-    @Enumerated
+    @Column
+    @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     private ResourceType resource;
 
-    @Column 
+    @Column
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     private RoleType type; 
 
     @OneToMany(
