@@ -9,6 +9,10 @@ public enum StorageProviderType {
         this.providerIdentifier = providerIdentifier;
     }
 
+    public String getProviderIdentifier() {
+        return this.providerIdentifier;
+    }
+
     public static StorageProviderType defaultOr(StorageProviderType value) {
         return value != null ? value : GCS;
     }
