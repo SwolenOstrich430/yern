@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.cglib.core.Local;
 
+import com.yern.model.common.AuditTimestamp;
 import com.yern.model.security.authorization.Role;
 
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity 
-@Table(name = "file_access_controls")
+@Table(name = "file_access_control")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,7 +38,7 @@ public class FileAccessControl {
         FileAccessControl accessControl = new FileAccessControl();
         accessControl.setUserId(userId);
         accessControl.setFileId(fileId);
-        
+
         Role role = new Role();
         role.setId(roleId);
         accessControl.setRole(role);
@@ -45,8 +46,10 @@ public class FileAccessControl {
         return accessControl;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id 
+    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    private Long Id; 
+    
     @Column 
     private Long userId;
 
@@ -58,27 +61,7 @@ public class FileAccessControl {
     private Long fileId;
 
     @Column 
-    private LocalDateTime createdAt;
-
-    @Column 
-    private LocalDateTime updatedAt;
-
-    @PrePersist 
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-            updatedAt = createdAt;
-        }
-
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-    }
-
-    @PreUpdate 
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    private AuditTimestamp auditTimestamps;
 
     @Override
     public boolean equals(Object obj) {
