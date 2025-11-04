@@ -14,6 +14,7 @@ public class UploadFileResponseTest {
         FileImpl file = new FileImpl();
         file.setId(1L);
         file.setRawPath("boop");
+        file.setOriginalName("ham.txt");
         file.setStorageProvider(StorageProviderType.GCS);
 
         UploadFileResponse resp = UploadFileResponse.from(file);
@@ -21,6 +22,7 @@ public class UploadFileResponseTest {
         assertInstanceOf(UploadFileResponse.class, resp);
         assertEquals(file.getId(), resp.getFileId());
         assertEquals(file.getRawPath(), resp.getRawPath());
+        assertEquals(file.getOriginalName(), resp.getOriginalName());
         assertEquals(file.getStorageProvider(), resp.getStorageProvider());
     }
 }
