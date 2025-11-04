@@ -269,11 +269,13 @@ public class FileService {
         fileRepository.save(file);
     }
 
-    // TODO: not sure class name is the best for this?
+    // TODO: move to FileImpl class
+    // TODO: add unit tests once moved 
     public String getRawPathForResource(Path localPath, String relatedClass) {
-        String fileBasename = localPath.getFileName().toString();
+        String uniqueFileName = FileUtil.getUniqueFileName(localPath);
+
         return (
-            "yern-uploads/raw/" + relatedClass.toLowerCase() + "/" +  fileBasename
+            "yern-uploads/raw/" + relatedClass.toLowerCase() + "/" +  uniqueFileName
         );
     }
 
