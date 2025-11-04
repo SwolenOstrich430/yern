@@ -6,6 +6,7 @@ create table if not exists yern.files (
     "public_url" text,
     "etag" text,
     "error" jsonb,
+    "original_name" text,
     "created_at" timestamp without time zone,
     "updated_at" timestamp without time zone 
 );
