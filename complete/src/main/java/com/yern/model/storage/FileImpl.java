@@ -3,22 +3,16 @@ package com.yern.model.storage;
 import java.io.File;
 import java.io.Serializable;
 
-import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.hibernate.type.SqlTypes;
 
-import com.google.api.client.json.JsonPolymorphicTypeMap.TypeDef;
-import com.yern.mapper.storage.file.StorageProviderTypeConverter;
 import com.yern.model.common.AuditTimestamp;
 
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Converter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
