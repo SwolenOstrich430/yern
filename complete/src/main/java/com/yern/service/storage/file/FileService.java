@@ -33,6 +33,16 @@ import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 
 import io.jsonwebtoken.lang.Assert;
 
+/**
+ * TODO: unique file names 
+ *      - ensure file names are unique 
+ *      - ensure original uploaded file name is stored:
+ *          - as new column: 'original_file_name'
+ * TODO: share file with other users 
+ * TODO: allow other users to edit files
+ * TODO: allow users to transfer ownership of files 
+ * TODO: change section class to resource type enum 
+ */
 @Service
 public class FileService {
     private FileRepository fileRepository;
@@ -71,6 +81,7 @@ public class FileService {
         FileImpl uploadedFile = null; 
 
         try {
+            // TODO: move this to FileUtils and rename 
             filePath = getNewFilePath(file.getOriginalFilename());
             File targetFile = filePath.toFile();
             file.transferTo(targetFile);
