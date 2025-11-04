@@ -67,6 +67,8 @@ public class FileImpl implements Serializable {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "error", columnDefinition = "jsonb")
     private ErrorLog error;
+    @Column 
+    private String originalFileName;
     @Column
     private AuditTimestamp auditTimestamps;
 
