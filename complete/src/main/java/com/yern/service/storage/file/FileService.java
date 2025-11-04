@@ -34,9 +34,6 @@ import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 import io.jsonwebtoken.lang.Assert;
 
 /**
- * TODO: unique file names 
- *      - ensure original uploaded file name is stored:
- *          - as new column: 'original_file_name'
  * TODO: share file with other users 
  * TODO: allow other users to edit files
  * TODO: allow users to transfer ownership of files 
