@@ -35,7 +35,6 @@ import io.jsonwebtoken.lang.Assert;
 
 /**
  * TODO: unique file names 
- *      - ensure file names are unique 
  *      - ensure original uploaded file name is stored:
  *          - as new column: 'original_file_name'
  * TODO: share file with other users 
@@ -104,7 +103,9 @@ public class FileService {
     ) throws UploadFileException, FileNotFoundException {
         FileUtil.validateFileExists(localPath);
         String targetPath = uploadFileRaw(localPath, relatedClass);
-        FileImpl returnFile = saveFile(userId, targetPath);
+        FileImpl returnFile = saveFile(
+            userId, targetPath, localPath.getFileName().toString()
+        );
         sendUploadFileEvent(returnFile);
         
         return returnFile;  
@@ -134,10 +135,11 @@ public class FileService {
 
     public FileImpl saveFile(
         Long userId,
-        String targetPath
+        String targetPath,
+        String originalPath
     ) throws AccessDeniedException, UploadFileException {
         FileImpl createdFile = fileRepository.save(
-            FileImpl.from(targetPath)
+            FileImpl.from(targetPath, originalPath)
         );
 
         if (createdFile == null || createdFile.getId() == null || 

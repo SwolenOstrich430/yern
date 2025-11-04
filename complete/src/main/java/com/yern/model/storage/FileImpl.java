@@ -3,6 +3,7 @@ package com.yern.model.storage;
 import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
@@ -38,9 +39,11 @@ import lombok.Setter;
 @Setter
 public class FileImpl implements Serializable {
 
-    public static FileImpl from(String rawPath) {
+    public static FileImpl from(String rawPath, String originalPath) {
         FileImpl file = new FileImpl();
+
         file.setRawPath(rawPath);
+        file.setOriginalName(originalPath);
         file.setStorageProvider(
             StorageProviderType.defaultOr("")
         );
@@ -68,7 +71,7 @@ public class FileImpl implements Serializable {
     @Column(name = "error", columnDefinition = "jsonb")
     private ErrorLog error;
     @Column 
-    private String originalFileName;
+    private String originalName;
     @Column
     private AuditTimestamp auditTimestamps;
 
@@ -110,5 +113,10 @@ public class FileImpl implements Serializable {
     public void setEtag(String etag) {
         assert(etag != null && !etag.isEmpty());
         this.etag = etag;
+    }
+
+    public void setOriginalName(String originalFileName) {
+        File file = new File(originalFileName);
+        this.originalName = file.getName();
     }
 }

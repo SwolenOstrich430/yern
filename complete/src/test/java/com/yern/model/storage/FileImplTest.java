@@ -22,8 +22,17 @@ public class FileImplTest {
     @Test 
     public void from_returnsAFileImpl_withARawPath() {
         String path = UUID.randomUUID().toString();
-        FileImpl file = FileImpl.from(path);
+        String originalPath = UUID.randomUUID().toString();
+        FileImpl file = FileImpl.from(path, originalPath);
         assertEquals(file.getRawPath(), path);
+    }
+
+    @Test 
+    public void from_returnsAFileImpl_withOriginalFileName_setToBaseNameOfOriginalPath() {
+        String path = UUID.randomUUID().toString();
+        String originalPath = UUID.randomUUID().toString() + ".txt";
+        FileImpl file = FileImpl.from(path, "/boop/" + originalPath);
+        assertEquals(file.getOriginalName(), originalPath);
     }
 
     @Test

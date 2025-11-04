@@ -57,6 +57,7 @@ public class FileServiceTest {
     private Page<FileImpl> page;
     private Pageable pageable;
     private String targetPath;
+    private String originalPath;
     private Path localPath;
 
     private FileService service;
@@ -80,6 +81,7 @@ public class FileServiceTest {
         spy = spy(service);
 
         this.targetPath = UUID.randomUUID().toString();
+        this.originalPath = "/boop/" + UUID.randomUUID().toString();
         this.localPath = mock(Path.class);
         this.files = new ArrayList<>();
         this.files.add(Mockito.mock(FileImpl.class));
@@ -91,9 +93,10 @@ public class FileServiceTest {
     @Test 
     public void uploadAndSaveFile_validatesTheProvidedFileExists() throws UploadFileException, FileNotFoundException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
-        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath);
+        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
-
+        when(localPath.getFileName()).thenReturn(localPath);
+        when(localPath.toString()).thenReturn(originalPath);
 
         try (MockedStatic<FileUtil> mockedStatic = Mockito.mockStatic(FileUtil.class)) {
             mockedStatic.when(() -> FileUtil.validateFileExists(localPath)).thenAnswer(invocation -> null);
@@ -107,8 +110,10 @@ public class FileServiceTest {
     @Test 
     public void uploadAndSaveFile_uploadsTheFileToStorage() throws UploadFileException, FileNotFoundException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
-        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath);
+        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
+        when(localPath.getFileName()).thenReturn(localPath);
+        when(localPath.toString()).thenReturn(originalPath);
 
         try (MockedStatic<FileUtil> mockedStatic = Mockito.mockStatic(FileUtil.class)) {
             mockedStatic.when(() -> FileUtil.validateFileExists(localPath)).thenAnswer(invocation -> null);
@@ -122,23 +127,27 @@ public class FileServiceTest {
     @Test 
     public void uploadAndSaveFile_savesTheFileToDB() throws UploadFileException, FileNotFoundException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
-        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath);
+        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
+        when(localPath.getFileName()).thenReturn(localPath);
+        when(localPath.toString()).thenReturn(originalPath);
 
         try (MockedStatic<FileUtil> mockedStatic = Mockito.mockStatic(FileUtil.class)) {
             mockedStatic.when(() -> FileUtil.validateFileExists(localPath)).thenAnswer(invocation -> null);
             
             spy.uploadAndSaveFile(userId, localPath, relatedClass);
             
-            verify(spy, times(1)).saveFile(userId, targetPath);
+            verify(spy, times(1)).saveFile(userId, targetPath, originalPath);
         }
     }
 
     @Test 
     public void uploadAndSaveFile_sendsFileUploadEvent() throws UploadFileException, FileNotFoundException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
-        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath);
+        doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
+        when(localPath.getFileName()).thenReturn(localPath);
+        when(localPath.toString()).thenReturn(originalPath);
 
         try (MockedStatic<FileUtil> mockedStatic = Mockito.mockStatic(FileUtil.class)) {
             mockedStatic.when(() -> FileUtil.validateFileExists(localPath)).thenAnswer(invocation -> null);
@@ -210,7 +219,7 @@ public class FileServiceTest {
 
         when(files.get(0).getId()).thenReturn(1L);
 
-        service.saveFile(userId, targetPath);
+        service.saveFile(userId, targetPath, originalPath);
         
         verify(
             fileRepository, 
@@ -226,7 +235,7 @@ public class FileServiceTest {
 
         assertThrows(
             UploadFileException.class, 
-            () -> service.saveFile(userId, targetPath)
+            () -> service.saveFile(userId, targetPath, originalPath)
         );
         
         when(
@@ -237,7 +246,7 @@ public class FileServiceTest {
 
         assertThrows(
             UploadFileException.class, 
-            () -> service.saveFile(userId, targetPath)
+            () -> service.saveFile(userId, targetPath, originalPath)
         );
 
         when(
@@ -248,7 +257,7 @@ public class FileServiceTest {
 
         assertThrows(
             UploadFileException.class, 
-            () -> service.saveFile(userId, targetPath)
+            () -> service.saveFile(userId, targetPath, originalPath)
         );
     }
 
@@ -260,7 +269,7 @@ public class FileServiceTest {
 
         when(files.get(0).getId()).thenReturn(1L);
 
-        service.saveFile(userId, targetPath);
+        service.saveFile(userId, targetPath, originalPath);
         
         verify(
             accessService, 
@@ -276,7 +285,7 @@ public class FileServiceTest {
 
         when(files.get(0).getId()).thenReturn(1L);
 
-        FileImpl file = service.saveFile(userId, targetPath);
+        FileImpl file = service.saveFile(userId, targetPath, originalPath);
         assertEquals(file, files.get(0));
     }
 
@@ -464,7 +473,7 @@ public class FileServiceTest {
 
         when(exc.getCause()).thenReturn(thrw);
         service.updateFailedFile(files.get(0), exc);
-        
+
         verify(fileRepository, times(1)).save(files.get(0));
     }
 } 
