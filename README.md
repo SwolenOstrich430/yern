@@ -1,18 +1,5 @@
 # Overview 
-This is the repo for a knitting and crochet tool -- the name is in progress. 
-
-## Local Setup 
-
-### Install Java
-brew install java 
-
-### Install Postgres 
-brew install postgres 
-
-### Authenticate to Cloud 
-#### GCP 
-Follow the insturctions in *./cloud/gcp/auth/README.md*.
-
+This is the repo for a knitting and crochet tool -- which is currently very much still in progress. 
 
 # Definitions 
 
