@@ -14,7 +14,11 @@ public class ErrorLog extends Throwable {
 
     public static ErrorLog from(Throwable exc) {
         ErrorLog error = new ErrorLog();
-        error.setExceptionType(exc.getCause().getClass().getName());
+
+        if (exc.getCause() != null) {
+            error.setExceptionType(exc.getCause().getClass().getName());
+        }
+        
         error.setMessage(exc.getMessage());
         error.setStackTrace(exc.getStackTrace());
         

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import org.springframework.http.MediaType;
 
 import com.yern.exceptions.NotFoundException;
+import com.yern.model.storage.UploadFileException;
 import com.yern.service.storage.NotUniqueException;
 
 public interface FileProcessorOrchestrator {
@@ -13,5 +14,6 @@ public interface FileProcessorOrchestrator {
     FileProcessor getProvider(Path filePath) throws NotUniqueException, IOException, NotFoundException;
     boolean hasValidMediaType(Path filePath) throws IOException;
     boolean isValidMediaType(MediaType mediaType);
+    void validateMediaType(Path localPath) throws IOException, UploadFileException;
 }
 

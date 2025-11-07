@@ -14,6 +14,7 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Component;
 
 import com.yern.exceptions.NotFoundException;
+import com.yern.model.storage.UploadFileException;
 import com.yern.service.storage.NotUniqueException;
 
 @Component 
@@ -34,6 +35,18 @@ public class GenericFileProcessor implements FileProcessorOrchestrator {
         processor.processFile(filePath, tempPath);
 
         return tempPath;
+    }
+
+    public void validateMediaType(Path filePath) throws UploadFileException {
+        String message = "Invalid media type for file.";
+
+        try {
+            if (!hasValidMediaType(filePath)) {
+                throw new UploadFileException(message);
+            }
+        } catch(IOException exc) {
+            throw new UploadFileException(message);
+        }
     }
 
     public boolean hasValidMediaType(Path filePath) throws IOException {

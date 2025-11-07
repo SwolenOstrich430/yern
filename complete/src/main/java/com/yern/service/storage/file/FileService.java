@@ -1,7 +1,6 @@
 package com.yern.service.storage.file;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -106,7 +105,7 @@ public class FileService {
         Long userId, 
         Path localPath, 
         String relatedClass
-    ) throws UploadFileException, FileNotFoundException {
+    ) throws UploadFileException, IOException {
         FileUtil.validateFileExists(localPath);
         String targetPath = uploadFileRaw(localPath, relatedClass);
         FileImpl returnFile = saveFile(
@@ -138,10 +137,12 @@ public class FileService {
     public String uploadFileRaw(
         Path localPath, 
         String relatedClass
-    ) throws UploadFileException {
+    ) throws UploadFileException, IOException {
         String targetPath = getRawPathForResource(
             localPath, relatedClass
         );
+        
+        fileProcessor.validateMediaType(localPath);
         
         try {
             storageProvider.uploadFile(localPath, targetPath);

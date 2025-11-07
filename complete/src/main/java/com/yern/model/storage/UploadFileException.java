@@ -4,7 +4,7 @@ package com.yern.model.storage;
 public class UploadFileException extends Exception {
 
     public UploadFileException(String string) {
-        //TODO Auto-generated constructor stub
+        super(string);
     }
 
     public UploadFileException() {

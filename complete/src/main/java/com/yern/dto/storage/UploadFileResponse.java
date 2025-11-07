@@ -16,7 +16,7 @@ public class UploadFileResponse {
     private String rawPath; 
     private StorageProviderType storageProvider;
     private String originalName;
-    private Throwable error;
+    private String error;
 
     public static UploadFileResponse from(FileImpl file) {
         UploadFileResponse resp = new UploadFileResponse();
@@ -30,7 +30,7 @@ public class UploadFileResponse {
 
     public static UploadFileResponse from(UploadFileException exc) {
         UploadFileResponse resp = new UploadFileResponse();
-        resp.setError(exc);
+        resp.setError(exc.getMessage());
         return resp;
     }
 }
