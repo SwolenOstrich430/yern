@@ -1,30 +1,35 @@
 package com.yern.service.storage.file.access;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.yern.model.security.Permission;
-import com.yern.model.security.Role;
+import org.springframework.security.access.AccessDeniedException;
+
+import com.yern.dto.storage.GrantFileAccessRequest;
+import com.yern.model.security.ResourceType;
+import com.yern.model.security.authorization.Permission;
+import com.yern.model.security.authorization.Role;
+import com.yern.model.security.authorization.RoleType;
 import com.yern.model.storage.FileAccessControl;
 import com.yern.repository.storage.FileAccessControlRespository;
-import com.yern.service.user.UserService;
+import com.yern.service.security.authorization.RoleService;
 
-import lombok.NoArgsConstructor;
+import io.jsonwebtoken.lang.Assert;
 
 @Service
-@NoArgsConstructor
 public class FileAccessControlService {
     private FileAccessControlRespository accessRepository;
+    private RoleService roleService;
     
     public FileAccessControlService(
         @Autowired FileAccessControlRespository accessRepository,
-        @Autowired UserService userService
+        @Autowired RoleService roleService
     ) {
         this.accessRepository = accessRepository;
+        this.roleService = roleService;
     }
 
     /** 
@@ -65,6 +70,54 @@ public class FileAccessControlService {
         }
     }
 
+    public Optional<FileAccessControl> grantAccess(
+        Long requestingUserId,
+        GrantFileAccessRequest req
+    ) {
+        Optional<Role> role = roleService.getRoleById(req.getRoleId());
+        Assert.isTrue(role.isPresent());
+
+        return grantAccess(
+            requestingUserId,
+            req.getUserId(),
+            req.getFileId(),
+            role.get()
+        );
+    }
+
+    public Optional<FileAccessControl> grantAccess(
+        Long requestingUserId,
+        Long requestedUserId,
+        Long fileId,
+        RoleType roleType
+    ) {
+        Optional<Role> potentialRole = roleService.getRoleByResourceAndType(
+            ResourceType.FILE, 
+            roleType
+        ); 
+
+        assert(potentialRole.isPresent());
+
+        return grantAccess(
+            requestingUserId, 
+            requestedUserId, 
+            fileId, 
+            potentialRole.get()
+        );
+    }
+
+    public Optional<FileAccessControl> createOwner(
+        Long userId,
+        Long fileId
+    ) throws AccessDeniedException {
+        return grantAccess(
+            userId, 
+            userId, 
+            fileId, 
+            RoleType.OWNER
+        );
+    }
+
     /** 
      * @param Long requestingUserId - Id of the user who's adding a role on a file they have AUTHORIZE access to.
      * @param Long requestedUserId - Id of the user who will be given a role on a file.
@@ -96,12 +149,15 @@ public class FileAccessControlService {
     ) throws AccessDeniedException {
         List<FileAccessControl> currAccess = accessRepository.findByFileId(fileId);
         
+        // TODO: convert comments to error messages 
+        // Have to assign an OWNER before doing anything else 
         if (currAccess.isEmpty()) {
-            assert(role.getRawPermissions().contains(Permission.OWNER));
-        } 
-        
-        if (requestedUserId != requestingUserId) {
-            verifyAccess(requestingUserId, fileId, Permission.OWNER);
+            assert(requestingUserId == requestedUserId);
+            role.validate(RoleType.OWNER, ResourceType.FILE);
+        // Can only assign roles with AUTHORIZE
+        } else {
+            assert(!role.isType(RoleType.OWNER));
+            verifyAccess(requestingUserId, fileId, Permission.AUTHORIZE);
         }
         
         FileAccessControl accessRecord = FileAccessControl.from(
@@ -133,11 +189,11 @@ public class FileAccessControlService {
         Long fileId, 
         Permission permission
     ) {
-        List<FileAccessControl> records = accessRepository.findByUserIdAndFileId(
-            userId, fileId
+        return hasAccess(
+            userId, 
+            accessRepository.findByUserIdAndFileId(userId, fileId), 
+            permission
         );
-
-        return hasAccess(userId, records, permission);
     }
 
     protected boolean hasAccess(
