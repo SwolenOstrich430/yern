@@ -17,6 +17,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -48,9 +49,8 @@ public class Role {
     private RoleType type; 
 
     @OneToMany(
-        mappedBy = "role", 
+        mappedBy = "roleId",
         cascade = CascadeType.ALL, 
-        orphanRemoval = true,
         fetch = FetchType.EAGER
     )
     private Set<RolePermission> permissions;
@@ -62,7 +62,7 @@ public class Role {
         Set<RolePermission> permissions
     ) {
         setId(id);
-        setName(name);
+        setDisplayName(name);
         setType(type);
         setPermissions(permissions);
     }
@@ -73,7 +73,7 @@ public class Role {
         this.permissions = 
             permissions
                 .stream()
-                .map(permission -> new RolePermission(this, permission))
+                .map(permission -> new RolePermission(getId(), permission))
                 .collect(Collectors.toSet());
     }
 

@@ -46,9 +46,9 @@ where
 --       the business rules in the app
 with initial_roles_permissions(role_type, permissions) as (
 	values 
-		('OWNER', '{OWN,AUTHORIZE,DELETE,UPDATE,GET}'::yern.permission[]),
-		('EDITOR', '{UPDATE,GET}'::yern.permission[]),
-		('READER', '{GET}'::yern.permission[])
+		('OWNER', '{OWN,AUTHORIZE,DELETE,UPDATE,READ}'::yern.permission[]),
+		('EDITOR', '{UPDATE,READ}'::yern.permission[]),
+		('READER', '{READ}'::yern.permission[])
 )
 insert into yern.roles_permissions(
 	role_id,

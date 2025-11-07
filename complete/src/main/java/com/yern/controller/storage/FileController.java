@@ -7,12 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.yern.dto.authentication.UserDetailsImpl;
+import com.yern.dto.storage.GrantFileAccessRequest;
+import com.yern.dto.storage.GrantFileAccessResponse;
 import com.yern.dto.storage.UploadFileResponse;
 import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
@@ -56,5 +59,18 @@ public class FileController {
         } 
 
         return resp;
+    }
+
+    @PostMapping("/access/grant")
+    public ResponseEntity<GrantFileAccessResponse> grantAccess(
+        @AuthenticationPrincipal UserDetailsImpl currentUser,
+        @RequestBody GrantFileAccessRequest accessRequest
+    ) throws Exception {
+        GrantFileAccessResponse resp = fileService.grantAccess(
+            currentUser.getUserId(),
+            accessRequest
+        );
+
+        return ResponseEntity.ok().body(resp);
     }
 }

@@ -10,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,15 +20,16 @@ import lombok.Setter;
 @Setter 
 @NoArgsConstructor
 public class RolePermission {
-    public RolePermission(Role role, Permission permission) {
-        this.role = role; 
+    public RolePermission(Long roleId, Permission permission) {
+        this.roleId = roleId; 
         this.permission = permission;
     }
 
     @Id 
-    @ManyToOne
-    private Role role;
+    @Column(name = "role_id")
+    private Long roleId;
 
+    @Id 
     @Column 
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)

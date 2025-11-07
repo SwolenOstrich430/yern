@@ -21,8 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.yern.common.file.FileUtil;
+import com.yern.dto.storage.GrantFileAccessRequest;
+import com.yern.dto.storage.GrantFileAccessResponse;
 import com.yern.dto.storage.ProcessFileRequest;
+import com.yern.model.security.authorization.Permission;
+import com.yern.model.security.authorization.RoleType;
 import com.yern.model.storage.ErrorLog;
+import com.yern.model.storage.FileAccessControl;
 import com.yern.model.storage.FileImpl;
 import com.yern.model.storage.UploadFileException;
 import com.yern.repository.storage.FileRepository;
@@ -30,6 +35,7 @@ import com.yern.service.messaging.MessagePublisher;
 import com.yern.service.storage.StorageProvider;
 import com.yern.service.storage.file.access.FileAccessControlService;
 import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
+import com.yern.service.user.UserService;
 
 import io.jsonwebtoken.lang.Assert;
 
@@ -47,6 +53,7 @@ public class FileService {
     private FileProcessorOrchestrator fileProcessor;
     private MessagePublisher messagePublisher;
     private FileAccessControlService accessService;
+    private UserService userService;
     private String fileUpdateTopicName; 
 
 
@@ -56,6 +63,7 @@ public class FileService {
         @Autowired FileProcessorOrchestrator fileProcessor,
         @Autowired MessagePublisher messagePublisher,
         @Autowired FileAccessControlService accessService,
+        @Autowired UserService userService,
         @Value("${messaging.topics.file-update}") String topicName
     ) {
         this.fileRepository = fileRepository;
@@ -63,6 +71,7 @@ public class FileService {
         this.fileProcessor = fileProcessor;
         this.messagePublisher = messagePublisher;
         this.accessService = accessService;
+        this.userService = userService;
         this.fileUpdateTopicName = topicName;
     }
 
@@ -106,6 +115,24 @@ public class FileService {
         sendUploadFileEvent(returnFile);
         
         return returnFile;  
+    }
+
+    // TODO: add unit tests
+    public GrantFileAccessResponse grantAccess(
+        Long fileOwnerId,
+        GrantFileAccessRequest req
+    ) throws Exception {
+        userService.validateUser(req.getUserId());
+
+        Optional<FileAccessControl> access = accessService.grantAccess(
+            fileOwnerId, req
+        );
+        // TODO: change to uniform exception
+        if (access.isEmpty()) {
+            throw new Exception("Unable to create access to file");
+        }
+
+        return GrantFileAccessResponse.from(req, access.get());
     }
 
     public String uploadFileRaw(
