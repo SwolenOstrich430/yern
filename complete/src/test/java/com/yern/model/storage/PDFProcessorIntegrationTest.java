@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -51,6 +52,7 @@ public class PDFProcessorIntegrationTest {
     private File embeddedFile;
     private final PDFProcessor processor = new PDFProcessor();
     private final String documentName = UUID.randomUUID().toString() + ".pdf";
+    private final String otherDocumentName = UUID.randomUUID().toString() + ".pdf";
     private final String embeddedFileName = UUID.randomUUID().toString() + ".txt";
     /**
      * 1. create a pdf document with pdf box 
@@ -138,11 +140,18 @@ public class PDFProcessorIntegrationTest {
 
         document.save(documentName);
 
-        assertDoesNotThrow(
-            () -> processor.processFile(Path.of(documentName))
+        FileUtils.copyFile(
+            Path.of(documentName).toFile(), 
+            Path.of(otherDocumentName).toFile()
         );
+        
+        cleanedDocument = Loader.loadPDF(new File(otherDocumentName));
 
-        cleanedDocument = Loader.loadPDF(new File(documentName));
+        assertDoesNotThrow(
+            () -> processor.processFile(
+                cleanedDocument, Path.of(otherDocumentName)
+            )
+        );
     }
 
     @AfterAll 
@@ -160,17 +169,24 @@ public class PDFProcessorIntegrationTest {
         if (origFile.exists()) {
             origFile.delete();
         }
+
+
+        File otherFile = new File(otherDocumentName);
+        if (otherFile.exists()) {
+            otherFile.delete();
+        }
     }
 
     @Test 
     @Order(1)
-    // TODO: make sure that all custom shit is removed
+    // TODO: make sure that all custom metadata is removed
     public void processFile_removesMetaData() {
-        assertEquals(
+        assertNotEquals(
             document.getDocument().getDocumentID(),
-            document.getDocument().getDocumentID()
+            cleanedDocument.getDocument().getDocumentID()
         );
-        assertNotNull(document.getDocumentCatalog().getMetadata());
+
+        assertNull(cleanedDocument.getDocumentCatalog().getMetadata());
 
         assertNotEquals(
             cleanedDocument.getDocument().getDocumentID(),
