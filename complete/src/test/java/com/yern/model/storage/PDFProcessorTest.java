@@ -27,6 +27,7 @@ public class PDFProcessorTest {
     private PDFProcessor spy; 
     private PDDocument document;
     private Path path; 
+    private Path otherPath;
     private File file;
     private COSDocument cosDocument; 
     private COSArray documentId;
@@ -38,6 +39,7 @@ public class PDFProcessorTest {
         this.spy = Mockito.spy(fileProcessor);
         this.document = Mockito.mock(PDDocument.class);
         this.path = Mockito.mock(Path.class);
+        this.otherPath = Mockito.mock(Path.class);
         this.file = Mockito.mock(File.class);
         this.cosDocument = Mockito.mock(COSDocument.class);
         this.documentId = Mockito.mock(COSArray.class);
@@ -55,7 +57,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeEmbeddedFiles(document);
             doNothing().when(spy).removeAcroForm(document);
             
-            spy.processFile(path);
+            spy.processFile(document, path);
 
             verify(spy, times(1)).removeMetaData(document);
         }
@@ -71,7 +73,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeEmbeddedFiles(document);
             doNothing().when(spy).removeAcroForm(document);
             
-            spy.processFile(path);
+            spy.processFile(document, path);
 
             verify(spy, times(1)).removeJavaScript(document);
         }
@@ -87,7 +89,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeEmbeddedFiles(document);
             doNothing().when(spy).removeAcroForm(document);
             
-            spy.processFile(path);
+            spy.processFile(document, path);
 
             verify(spy, times(1)).removeEmbeddedFiles(document);
         }
@@ -103,7 +105,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeEmbeddedFiles(document);
             doNothing().when(spy).removeAcroForm(document);
             
-            spy.processFile(path);
+            spy.processFile(document, path);
 
             verify(spy, times(1)).removeAcroForm(document);
         }
@@ -119,7 +121,7 @@ public class PDFProcessorTest {
             doNothing().when(spy).removeEmbeddedFiles(document);
             doNothing().when(spy).removeAcroForm(document);
             
-            spy.processFile(path);
+            spy.processFile(document, path);
 
             verify(document, times(1)).save(path.toString());
         }

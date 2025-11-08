@@ -27,6 +27,7 @@ public class GenericFileProcessorTest {
     private GenericFileProcessor spy;
     private List<FileProcessor> processors;
     private Path path;
+    private Path otherPath;
     private MediaType mediaType;
 
 
@@ -40,6 +41,7 @@ public class GenericFileProcessorTest {
         }
 
         this.path = Mockito.mock(Path.class);
+        this.otherPath = Mockito.mock(Path.class);
         this.processor = new GenericFileProcessor(processors);
         this.spy = Mockito.spy(processor);
         this.mediaType = Mockito.mock(MediaType.class);
@@ -48,15 +50,15 @@ public class GenericFileProcessorTest {
     @Test 
     public void processFile_getsTheAssociatedProviderAndCallsProcessFile() throws NotFoundException, NotUniqueException, IOException {
         doReturn(processors.get(0)).when(spy).getProvider(path);
-        doNothing().when(processors.get(0)).processFile(path);
-
+        doReturn(otherPath).when(spy).getTempFilePath(path);
+        
         spy.processFile(path);
 
         verify(
             processors.get(0),
             times(1)
         )
-        .processFile(path);
+        .processFile(eq(path), any(Path.class));
     }
 
     @Test 

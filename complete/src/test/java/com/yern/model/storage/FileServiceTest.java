@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import com.yern.service.storage.StorageProvider;
 import com.yern.service.storage.file.FileService;
 import com.yern.service.storage.file.access.FileAccessControlService;
 import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
+import com.yern.service.user.UserService;
 
 @TestPropertySource(properties = {"messaging.topics.file-update=topic-name"})
 public class FileServiceTest {
@@ -49,6 +49,8 @@ public class FileServiceTest {
     FileAccessControlService accessService;
     @Mock 
     ProcessFileRequest processFileRequest;
+    @Mock 
+    private UserService userService;
 
     @Value("${messaging.topics.file-update}") 
     String fileUpdateTopicName;
@@ -76,6 +78,7 @@ public class FileServiceTest {
             fileProcessor, 
             publisher, 
             accessService,
+            userService,
             fileUpdateTopicName
         );
         spy = spy(service);
@@ -91,7 +94,7 @@ public class FileServiceTest {
     }
 
     @Test 
-    public void uploadAndSaveFile_validatesTheProvidedFileExists() throws UploadFileException, FileNotFoundException {
+    public void uploadAndSaveFile_validatesTheProvidedFileExists() throws UploadFileException, IOException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
         doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
@@ -108,7 +111,7 @@ public class FileServiceTest {
     }
 
     @Test 
-    public void uploadAndSaveFile_uploadsTheFileToStorage() throws UploadFileException, FileNotFoundException {
+    public void uploadAndSaveFile_uploadsTheFileToStorage() throws UploadFileException, IOException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
         doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
@@ -125,7 +128,7 @@ public class FileServiceTest {
     }
 
     @Test 
-    public void uploadAndSaveFile_savesTheFileToDB() throws UploadFileException, FileNotFoundException {
+    public void uploadAndSaveFile_savesTheFileToDB() throws UploadFileException, IOException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
         doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));
@@ -142,7 +145,7 @@ public class FileServiceTest {
     }
 
     @Test 
-    public void uploadAndSaveFile_sendsFileUploadEvent() throws UploadFileException, FileNotFoundException {
+    public void uploadAndSaveFile_sendsFileUploadEvent() throws UploadFileException, IOException {
         doReturn(targetPath).when(spy).uploadFileRaw(localPath, relatedClass);
         doReturn(files.get(0)).when(spy).saveFile(userId, targetPath, originalPath);
         doNothing().when(spy).sendUploadFileEvent(files.get(0));

@@ -86,8 +86,8 @@ public class FileControllerTest {
     @Test 
     public void uploadFile_returnsAnUploadFileResponse() throws Exception {
         when(
-            fileService.uploadFile(
-                any(MultipartFile.class), any(String.class)
+            fileService.uploadAndSaveFile(
+                any(Long.class), any(MultipartFile.class), any(String.class)
             )
         ).thenReturn(fileImpl);
         
