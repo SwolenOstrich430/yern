@@ -76,7 +76,10 @@ public class GCSService implements CloudStorageProvider {
     @Override
     public void deleteBucket(String bucketName) {
         Bucket bucket = client.get(bucketName);
-        bucket.delete();
+
+        if (bucket != null) {
+            bucket.delete();
+        }
     }
 
     @Override
