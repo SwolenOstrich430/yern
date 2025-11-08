@@ -1,6 +1,6 @@
 package com.yern.service.security.authentication;
 
-import com.yern.dto.authentication.UserDetailsImpl;
+import com.yern.dto.security.authentication.UserDetailsImpl;
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
 import com.yern.repository.user.UserAuthenticationRepository;

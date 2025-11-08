@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +16,7 @@ import com.yern.model.security.authorization.Permission;
 import com.yern.model.security.authorization.Role;
 import com.yern.model.security.authorization.RoleType;
 import com.yern.model.storage.FileAccessControl;
+import com.yern.model.storage.FileImpl;
 import com.yern.repository.storage.FileAccessControlRespository;
 import com.yern.service.security.authorization.RoleService;
 
@@ -147,7 +150,7 @@ public class FileAccessControlService {
         Long fileId,
         Role role
     ) throws AccessDeniedException {
-        List<FileAccessControl> currAccess = accessRepository.findByFileId(fileId);
+        List<FileAccessControl> currAccess = findByFileId(fileId);
         
         // TODO: convert comments to error messages 
         // Have to assign an OWNER before doing anything else 
@@ -191,7 +194,7 @@ public class FileAccessControlService {
     ) {
         return hasAccess(
             userId, 
-            accessRepository.findByUserIdAndFileId(userId, fileId), 
+            findByUserIdAndFileId(userId, fileId), 
             permission
         );
     }
@@ -210,5 +213,25 @@ public class FileAccessControlService {
                             .getRawPermissions()
                             .contains(permission);
                 });
+    }
+
+    public List<FileAccessControl> findByFileId(Long fileId) {
+        FileImpl file = new FileImpl();
+        file.setId(fileId);
+
+        return accessRepository.findByFile(file);
+    }
+
+     public Page<FileAccessControl> findByUserId(Long userId, Pageable pageable) {
+        return accessRepository.findByUserId(userId, pageable);
+    }
+
+    public List<FileAccessControl> findByUserIdAndFileId(Long userId, Long fileId) {
+        FileImpl file = new FileImpl();
+        file.setId(fileId);
+
+        return accessRepository.findByUserIdAndFile(
+            userId, file
+        );
     }
 }

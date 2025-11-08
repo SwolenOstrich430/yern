@@ -1,4 +1,4 @@
-package com.yern.dto.authentication;
+package com.yern.dto.security.authentication;
 
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.GrantedAuthority;

@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,7 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.yern.dto.authentication.UserDetailsImpl;
+import com.yern.dto.security.authentication.UserDetailsImpl;
+import com.yern.dto.storage.GetFileResponse;
 import com.yern.dto.storage.GrantFileAccessRequest;
 import com.yern.dto.storage.GrantFileAccessResponse;
 import com.yern.dto.storage.UploadFileResponse;
@@ -96,6 +100,16 @@ public class FileController {
             currentUser.getUserId(),
             fileId,
             response
+        );
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<GetFileResponse>> listFiles(
+        @AuthenticationPrincipal UserDetailsImpl currentUser,
+        Pageable pageable
+    ) {
+        return ResponseEntity.ok().body(
+            fileService.findByUserId(currentUser.getUserId(), pageable)
         );
     }
 }

@@ -1,9 +1,5 @@
 package com.yern.model.storage;
 
-import java.time.LocalDateTime;
-
-import org.springframework.cglib.core.Local;
-
 import com.yern.model.common.AuditTimestamp;
 import com.yern.model.security.authorization.Role;
 
@@ -15,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +31,10 @@ public class FileAccessControl {
     ) {
         FileAccessControl accessControl = new FileAccessControl();
         accessControl.setUserId(userId);
-        accessControl.setFileId(fileId);
+        
+        FileImpl file = new FileImpl();
+        file.setId(fileId);
+        accessControl.setFile(file);
 
         Role role = new Role();
         role.setId(roleId);
@@ -57,11 +54,16 @@ public class FileAccessControl {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @Column 
-    private Long fileId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "file_id") 
+    private FileImpl file;
 
     @Column 
     private AuditTimestamp auditTimestamps;
+
+    public Long getFileId() {
+        return getFile().getId();
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -71,9 +73,9 @@ public class FileAccessControl {
         FileAccessControl other = (FileAccessControl) obj; 
 
         return (
-            this.getRole().getId() == other.getRole().getId() && 
-            this.fileId == other.getFileId() && 
-            this.userId == other.getUserId()
+            getRole().getId() == other.getRole().getId() && 
+            getFileId() == other.getFileId() && 
+            getUserId() == other.getUserId()
         );
     }
 
@@ -82,7 +84,7 @@ public class FileAccessControl {
         return (
             31 * (
                 Long.hashCode(role.getId()) +
-                Long.hashCode(fileId) + 
+                Long.hashCode(getFileId()) + 
                 Long.hashCode(userId)
             )
         );

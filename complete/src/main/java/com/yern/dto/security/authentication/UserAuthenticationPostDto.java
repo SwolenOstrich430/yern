@@ -1,4 +1,4 @@
-package com.yern.dto.authentication;
+package com.yern.dto.security.authentication;
 
 import lombok.Getter;
 import lombok.Setter;

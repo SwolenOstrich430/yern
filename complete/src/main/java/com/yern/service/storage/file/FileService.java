@@ -1,7 +1,6 @@
 package com.yern.service.storage.file;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -23,12 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.yern.common.file.FileUtil;
+import com.yern.dto.storage.GetFileResponse;
 import com.yern.dto.storage.GrantFileAccessRequest;
 import com.yern.dto.storage.GrantFileAccessResponse;
 import com.yern.dto.storage.ProcessFileRequest;
 import com.yern.exceptions.NotFoundException;
 import com.yern.model.security.authorization.Permission;
-import com.yern.model.security.authorization.RoleType;
 import com.yern.model.storage.ErrorLog;
 import com.yern.model.storage.FileAccessControl;
 import com.yern.model.storage.FileImpl;
@@ -162,6 +161,19 @@ public class FileService {
         response.flushBuffer();
         // TODO: add finally block to make sure this gets deleted
         FileUtils.delete(localFile.toFile());
+    }
+
+    public Page<GetFileResponse> findByUserId(
+        Long userId,
+        Pageable pageable 
+    ) {
+        Page<FileAccessControl> accessControls = accessService.findByUserId(
+            userId, pageable
+        );
+
+        return accessControls.map(accessControl -> {
+            return GetFileResponse.from(accessControl);
+        });
     }
 
     public FileImpl getFileById(Long userId, Long fileId) {

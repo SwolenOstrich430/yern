@@ -2,6 +2,7 @@ package com.yern.model.storage;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,6 +20,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,24 +50,32 @@ public class FileImpl implements Serializable {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     @Column(name = "storage_provider", columnDefinition = "storage_provider")
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
     private StorageProviderType storageProvider;
+    
     @Column 
     private String rawPath;
+    
     @Column 
     private String formattedPath;
+    
     @Column 
     private String publicUrl;
+    
     @Column 
     private String etag;
+    
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "error", columnDefinition = "jsonb")
     private ErrorLog error;
+    
     @Column 
     private String originalName;
+    
     @Column
     private AuditTimestamp auditTimestamps;
 

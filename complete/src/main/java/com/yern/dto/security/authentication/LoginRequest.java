@@ -1,4 +1,4 @@
-package com.yern.dto.authentication;
+package com.yern.dto.security.authentication;
 
 public record LoginRequest(String email, String password) {
 }

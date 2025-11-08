@@ -1,6 +1,6 @@
 package com.yern.config;
 
-import com.yern.dto.authentication.UserDetailsImpl;
+import com.yern.dto.security.authentication.UserDetailsImpl;
 import com.yern.service.security.authentication.JwtService;
 import com.yern.service.security.authentication.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
