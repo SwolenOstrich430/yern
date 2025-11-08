@@ -1,6 +1,7 @@
 package com.yern.service.storage.file;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -23,6 +26,7 @@ import com.yern.common.file.FileUtil;
 import com.yern.dto.storage.GrantFileAccessRequest;
 import com.yern.dto.storage.GrantFileAccessResponse;
 import com.yern.dto.storage.ProcessFileRequest;
+import com.yern.exceptions.NotFoundException;
 import com.yern.model.security.authorization.Permission;
 import com.yern.model.security.authorization.RoleType;
 import com.yern.model.storage.ErrorLog;
@@ -37,6 +41,7 @@ import com.yern.service.storage.file.processing.FileProcessorOrchestrator;
 import com.yern.service.user.UserService;
 
 import io.jsonwebtoken.lang.Assert;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * TODO: share file with other users 
@@ -134,6 +139,39 @@ public class FileService {
         return GrantFileAccessResponse.from(req, access.get());
     }
 
+    public void streamFileContent(
+        Long userId, 
+        Long fileId, 
+        HttpServletResponse response
+    ) throws IOException {
+        FileImpl file = getFileById(userId, fileId);
+        // if the file hasn't been processed yet, we can't serve it
+        if (!storageProvider.fileExists(file.getFormattedPath())) {
+            sendUploadFileEvent(file);
+            throw new NotFoundException(
+                "File has not been processed yet. Please try again later."
+            );
+        }
+
+        Path localFile = getNewFilePath(file.getBasename()); 
+        storageProvider.downloadFile(localFile, file.getFormattedPath());
+        assert(localFile.toFile().exists());
+
+        InputStream inputStream = Files.newInputStream(localFile); 
+        IOUtils.copy(inputStream, response.getOutputStream());
+        response.flushBuffer();
+        // TODO: add finally block to make sure this gets deleted
+        FileUtils.delete(localFile.toFile());
+    }
+
+    public FileImpl getFileById(Long userId, Long fileId) {
+        FileImpl file = fileRepository.getFileById(fileId);
+        Assert.notNull(file);
+        accessService.verifyAccess(userId, fileId, Permission.READ);
+
+        return file;
+    }
+
     public String uploadFileRaw(
         Path localPath, 
         String relatedClass
@@ -215,9 +253,9 @@ public class FileService {
             localFile = getNewFilePath(file.getBasename()); 
             storageProvider.downloadFile(localFile, file.getRawPath());
             Path processedFile = fileProcessor.processFile(localFile);
-            
+
             uploadAndSaveProcessedFile(file, localFile, processedFile);
-        } catch (AssertionError | IOException e) {
+        } catch (Exception e) {
             updateFailedFile(file, e);
         } finally {
             try {
@@ -250,6 +288,18 @@ public class FileService {
                             e
                         );
                     }
+
+                    try {
+                        file.setPublicUrl(storageProvider.getPublicUrl(
+                            file.getFormattedPath()
+                        ));
+                    } catch(Exception exc) {
+                        throw new RuntimeException(
+                            "Unable to generate public url from file",
+                            exc
+                        );
+                    }
+                    
                     updateProcessedFile(file);
                 }
             );
@@ -281,7 +331,6 @@ public class FileService {
 
                 byte[] hashBytes = md.digest();
                 return HexFormat.of().formatHex(hashBytes);
-
             } catch (Exception e) {
                 throw new RuntimeException(
                     "Failed to calculate ETag for file: " + filePath, e
@@ -324,17 +373,5 @@ public class FileService {
         file.deleteOnExit();
 
         return Path.of(fullPath);
-    }
-
-    // TODO: add unit test 
-    // TODO: add file_permissions table and define permissions 
-    public void validateAccess(
-        Long fileId,
-        Long userId
-    ) throws AccessDeniedException {
-        Optional<FileImpl> file = fileRepository.findById(fileId);
-        file.orElseThrow(
-            () -> new AccessDeniedException("File: " + fileId)
-        );
     }
 }

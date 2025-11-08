@@ -2,12 +2,23 @@ package com.yern.service.storage.cloud.gcp;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
@@ -15,6 +26,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.HttpMethod;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.yern.dto.storage.BucketImpl;
@@ -28,11 +40,15 @@ import com.yern.service.storage.cloud.CloudStorageProvider;
 @Service
 public class GCSService implements CloudStorageProvider {
     private Storage client;
+    private String authenticatedUrlPrefix;
 
     public GCSService(
-        @Autowired Storage client
-    ) {
+        @Autowired Storage client,
+        @Value("${storage.gcs.authenticated-url-prefix}")
+        @Autowired String authenticatedUrlPrefix
+    ) throws MalformedURLException, URISyntaxException {
         this.client = client; 
+        this.authenticatedUrlPrefix = authenticatedUrlPrefix;
     }
 
     @Override
@@ -81,6 +97,24 @@ public class GCSService implements CloudStorageProvider {
         // return createFile(path);
     }
 
+    // TODO: add unit tests
+    // TODO: later will need to figure out an actually secure policy for urls
+    @Override
+    public String getPublicUrl(String path) {
+        String bucketName = getBucketNameFromPath(path);
+        // URI builder doesn't add this for you
+        if (!bucketName.endsWith("/")) {
+            bucketName += "/";
+        }
+
+        return UriComponentsBuilder
+                        .fromUriString(authenticatedUrlPrefix)
+                        .path(bucketName)
+                        .path(getFileNameFromPath(path))
+                        .build()
+                        .toString();
+    }
+
     @Override
     public List<String> listFolders(String folderPath) {
         // TODO Auto-generated method stub
@@ -109,7 +143,6 @@ public class GCSService implements CloudStorageProvider {
             BlobInfo.newBuilder(blobId).build(), 
             localPath
         );
-
     }
 
     @Override
@@ -178,7 +211,6 @@ public class GCSService implements CloudStorageProvider {
             file != null && file.exists()
         );
     }
-
 
     public BlobId getBlobIdFromPath(String path) {
         return BlobId.of(
