@@ -1,5 +1,5 @@
 # Overview 
-This is the repo for a knitting and crochet tool -- which is currently very much still in progress. 
+This is the repo for a knitting and crochet tool -- which is currently very much still in progress. I was using this as a way to get back into working with Spring. Currently, all base functionality has been added, and I'm working on adding documentation, unit tests, and moving my Postman tests into a Jenkins pipeline.
 
 # Definitions 
 
