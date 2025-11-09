@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.yern.controller.user.UserDetailsImplMock;
 import com.yern.dto.storage.UploadFileResponse;
 import com.yern.model.LocalDateTimeDeserializer;
 import com.yern.model.storage.FileImpl;
@@ -84,6 +85,9 @@ public class FileControllerTest {
     }
 
     @Test 
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     public void uploadFile_returnsAnUploadFileResponse() throws Exception {
         when(
             fileService.uploadAndSaveFile(
@@ -96,7 +100,6 @@ public class FileControllerTest {
             .file(rawFile)
             .param("file", rawFile.getName())
         )
-        // .andExpect(status().isOk())
         .andReturn();
         
         String responseBody = result.getResponse().getContentAsString();

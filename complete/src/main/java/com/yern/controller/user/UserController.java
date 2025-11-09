@@ -31,12 +31,12 @@ public class UserController {
         // This will change in the future when we do friends 
         // Let people think they're actually searching if they're 
         // doing this for email discovery.
-        if (currentUser.getUsername() != email) {
+        if (!currentUser.getUsername().equals(email)) {
             return ResponseEntity.of(Optional.empty());
         }
 
         return ResponseEntity.ok(
-            Optional.of(userService.getUserByEmail(email))
+            Optional.ofNullable(userService.getUserByEmail(email))
         );
     }
 
@@ -50,7 +50,7 @@ public class UserController {
         }
 
         return ResponseEntity.ok(
-            Optional.of(userService.getUserById(id))
+            Optional.ofNullable(userService.getUserById(id))
         );
     }
 

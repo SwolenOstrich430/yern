@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.yern.model.LocalDateTimeDeserializer;
 import com.yern.model.user.User;
 import com.yern.service.user.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,14 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -57,17 +53,13 @@ public class UserControllerTest {
         .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeDeserializer())
         .create();
 
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders
-                    .webAppContextSetup(context)
-                    .apply(SecurityMockMvcConfigurers.springSecurity())
-                    .build();
-    }
     // Method: Get User
     @Test
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     @DisplayName(
-            "Get User: throws error when no matching 'id' is found"
+        "Get User: throws error when no matching 'id' is found"
     )
     public void getUser_shouldReturnNull_whenNoMatchingIdFound() throws Exception {
         User user = new User(
@@ -81,18 +73,20 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint + "/" + user.getId())
-            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
             .accept("application/json")
         )
         .andExpect(status().isOk())
         .andReturn();
 
         assertTrue(
-            result.getResponse().getContentAsString().isEmpty()
+            result.getResponse().getContentAsString().equals("null")
         );
     }
 
     @Test
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     @DisplayName(
             "Get User: returns a User when a matching 'id' is found"
     )
@@ -108,7 +102,6 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint + "/" + user.getId())
-                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
                 .accept("application/json")
                 .param("id", String.valueOf(user.getId()))
         )
@@ -126,6 +119,9 @@ public class UserControllerTest {
 
     // Method: Get User by Email
     @Test
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     @DisplayName(
         "Get User by Email: throws error when 'email' param is not provided."
     )
@@ -144,11 +140,14 @@ public class UserControllerTest {
     }
 
     @Test
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     @DisplayName(
         "Get User by Email: returns the expected user when a matching email is found."
     )
     public void getUserByEmail_shouldReturnUser_whenMatchingEmailFound() throws Exception {
-        String email = "test@google.com";
+        String email = "testuser";
         User user = new User(
             "first",
             "last",
@@ -159,7 +158,6 @@ public class UserControllerTest {
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint)
-            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
             .accept("application/json")
             .param("email", email)
         )
@@ -175,24 +173,26 @@ public class UserControllerTest {
     }
 
     @Test
+    @UserDetailsImplMock(
+        username = "testuser", userId = 1L, password = "password"
+    )
     @DisplayName(
         "Get User by Email: returns null when a matching user is found."
     )
     public void getUserByEmail_shouldReturnNull_whenNoMatchingUserFound() throws Exception {
-        String email = "test@google.com";
+        String email = "testuser";
 
         when(userService.getUserByEmail(email)).thenReturn(null);
 
         MvcResult result = this.mockMvc.perform(
             get(userEndpoint)
-            .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
             .param("email", email)
         )
         .andExpect(status().isOk())
         .andReturn();
 
         assertTrue(
-            result.getResponse().getContentAsString().isEmpty()
+            result.getResponse().getContentAsString().equals("null")
         );
     }
 
