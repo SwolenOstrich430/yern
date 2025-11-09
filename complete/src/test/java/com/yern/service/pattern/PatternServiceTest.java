@@ -5,13 +5,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import com.google.cloud.spring.pubsub.support.converter.PubSubMessageConverter;
 import com.yern.dto.pattern.PatternCreateRequest;
 import com.yern.dto.pattern.PatternCreateResponse;
 import com.yern.dto.pattern.SectionCreateRequest;
@@ -26,11 +31,22 @@ import com.yern.model.pattern.UserPattern;
 
 public class PatternServiceTest {
     private PatternService patternService;
-    private FileService fileService;
+    
+    @Mock 
     private SectionService sectionService;
+
+    @Mock 
     private PatternRepository patternRepository;
+
+    @Mock 
     private UserPatternRepository userPatternRepository;
+
+    @Mock
     private PatternMapper patternMapper;
+
+    @Mock 
+    private PubSubMessageConverter messageConverter;
+
     private SectionCreateRequest req;
     private SectionCreateResponse resp;
     private PatternCreateRequest patternCreateRequest;
@@ -46,19 +62,14 @@ public class PatternServiceTest {
 
     @BeforeEach
     public void setup() {
-        this.patternRepository = mock(PatternRepository.class);
-        this.sectionService = mock(SectionService.class);
-        this.fileService = mock(FileService.class);
-        this.userPatternRepository = mock(UserPatternRepository.class);
-        this.patternMapper = mock(PatternMapper.class);
-        this.messagePublisher = mock(MessagePublisher.class);
+        MockitoAnnotations.openMocks(this);
 
         this.patternService = new PatternService(
-            fileService,
             sectionService, 
             patternRepository,
             userPatternRepository,
             patternMapper,
+            messageConverter,
             messagePublisher,
             topicName
         );
@@ -146,6 +157,7 @@ public class PatternServiceTest {
         assertEquals(patternCreateResponse, currResp);
     }
 
+    // TODO: link section and file ownership validation
     @Test 
     public void addSection_returnsASectionCreateResponse() {
         when(userPatternRepository.findByUserIdAndPatternId(
@@ -153,8 +165,7 @@ public class PatternServiceTest {
         )).thenReturn(Optional.of(userPattern));
         when(req.getPatternId()).thenReturn(patternId);
         when(req.getFileId()).thenReturn(fileId);
-        doNothing().when(fileService).validateAccess(any(), any());
-        when(sectionService.createSection(req)).thenReturn(resp);
+        when(sectionService.createSection(userId, req)).thenReturn(resp);
 
         SectionCreateResponse foundResp = patternService.addSection(userId, req);
         assertInstanceOf(SectionCreateResponse.class, foundResp);
@@ -175,26 +186,6 @@ public class PatternServiceTest {
     }
 
     @Test 
-    public void addSection_throwsAccessDenied_whenContextualUserDoesntHaveAccessToFileId() {
-        when(req.getPatternId()).thenReturn(patternId);
-        when(req.getFileId()).thenReturn(fileId);
-        when(userPatternRepository.findByUserIdAndPatternId(
-            userId, patternId
-        )).thenReturn(Optional.of(userPattern));
-
-        doThrow(
-            AccessDeniedException.class
-        )
-        .when(fileService)
-        .validateAccess(fileId, userId);
-
-        assertThrows(
-            AccessDeniedException.class, 
-            () -> patternService.addSection(userId, req)
-        );
-    }
-
-    @Test 
     public void addSection_savesASectionToDB_whenAccessChecksPass() {
         when(req.getPatternId()).thenReturn(patternId);
         when(req.getFileId()).thenReturn(fileId);
@@ -202,13 +193,11 @@ public class PatternServiceTest {
             userId, patternId
         )).thenReturn(Optional.of(userPattern));
 
-        doNothing().when(fileService).validateAccess(fileId, userId);
-
         patternService.addSection(userId, req);
 
         verify(
             sectionService, 
             times(1)
-        ).createSection(req);
+        ).createSection(userId, req);
     }
 }

@@ -12,6 +12,7 @@ import com.yern.model.pattern.Section;
 import com.yern.model.storage.FileImpl;
 import com.yern.repository.pattern.CounterRepository;
 import com.yern.repository.pattern.SectionRepository;
+import com.yern.service.storage.file.FileService;
 import com.yern.mapper.pattern.SectionMapper;
 
 @Service 
@@ -19,15 +20,18 @@ public class SectionService {
     private SectionRepository sectionRepository;
     private SectionMapper sectionMapper;
     private CounterRepository counterRepository;
+    private FileService fileService;
     
     public SectionService(
         @Autowired SectionRepository repository,
         @Autowired SectionMapper mapper,
-        @Autowired CounterRepository counterRepository
+        @Autowired CounterRepository counterRepository,
+        @Autowired FileService fileService
     ) {
         this.sectionRepository = repository;
         this.sectionMapper = mapper;
         this.counterRepository = counterRepository;
+        this.fileService = fileService;
     }
 
     // get a section and its related file if one exists
@@ -48,15 +52,21 @@ public class SectionService {
     // otherwise, no validation will occur
     // contextually, this should only be called through pattern service
     protected SectionCreateResponse createSection(
+        Long userId,
         SectionCreateRequest req 
     ) {
         Counter counter = createInitialCounter();
         req.setCounterId(counter.getId());
         // TODO: validate sequence not null
+
+        // validate that the file's actually real and user has ownership
+        if (req.getFileId() != null) {
+            // get file handles not null and access cases
+            fileService.getFileById(userId, req.getFileId());
+        }
         Section createdSection = sectionRepository.save(
             sectionMapper.dtoToModel(req)
         );
-
         // TODO: assert values are set as expected 
         assert(createdSection.getCounter().getId() == counter.getId());
         return sectionMapper.modelToDto(createdSection);

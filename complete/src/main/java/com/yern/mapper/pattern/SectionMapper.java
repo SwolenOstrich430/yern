@@ -40,8 +40,8 @@ public class SectionMapper {
         resp.setName(section.getName());
         resp.setPatternId(section.getPatternId());
         resp.setSequence(section.getSequence());
-        resp.setCreatedAt(section.getCreatedAt());
-        resp.setUpdatedAt(section.getUpdatedAt());
+        resp.setCreatedAt(section.getAuditTimestamps().getCreatedAt());
+        resp.setUpdatedAt(section.getAuditTimestamps().getUpdatedAt());
         
         if (section.getFile() != null) {
             resp.setFileId(section.getFile().getId());

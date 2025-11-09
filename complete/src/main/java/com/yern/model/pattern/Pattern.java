@@ -57,8 +57,9 @@ public class Pattern {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.auditTimestamps = new AuditTimestamp(
+            createdAt, updatedAt
+        );
     }
 
     @PrePersist

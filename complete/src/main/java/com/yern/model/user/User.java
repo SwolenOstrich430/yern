@@ -73,6 +73,14 @@ public class User {
 		this.auditTimestamps.setUpdatedAt(updatedAt.orElse(LocalDateTime.now()));
 	}
 
+	public LocalDateTime getCreatedAt() {
+		return getAuditTimestamps().getCreatedAt();
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return getAuditTimestamps().getUpdatedAt();
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

@@ -23,11 +23,9 @@ import com.yern.model.pattern.UserPattern;
 import com.yern.repository.pattern.PatternRepository;
 import com.yern.repository.pattern.UserPatternRepository;
 import com.yern.service.messaging.MessagePublisher;
-import com.yern.service.storage.file.FileService;
 
 @Service 
 public class PatternService {
-    private FileService fileService;
     private SectionService sectionService;
     private PatternRepository patternRepository;
     private UserPatternRepository userPatternRepository;
@@ -38,7 +36,6 @@ public class PatternService {
     // TODO: too many depencies hanging out here 
     // TODO: move the 
     public PatternService(
-        @Autowired FileService fileService,
         @Autowired SectionService sectionService,
         @Autowired PatternRepository patternRepository,
         @Autowired UserPatternRepository userPatternRepository,
@@ -47,7 +44,6 @@ public class PatternService {
         @Autowired MessagePublisher messagePublisher,
         @Value("${messaging.topics.counter-update}") String counterTopicName
     ) {
-        this.fileService = fileService;
         this.sectionService = sectionService;
         this.patternRepository = patternRepository;
         this.userPatternRepository = userPatternRepository;
@@ -90,8 +86,7 @@ public class PatternService {
         SectionCreateRequest req 
     ) {
         validateAccess(req.getPatternId(), userId);
-        fileService.validateAccess(req.getFileId(), userId);
-        return sectionService.createSection(req);
+        return sectionService.createSection(userId, req);
     }
 
     public void sendSectionCounterLog(
@@ -107,7 +102,7 @@ public class PatternService {
         validateAccess(req.getPatternId(), req.getSectionId(), userId);
         // TODO: add better logging for malformed requests 
         req.setCounterId(section.getCounter().getId());
-        // TODO: validate that publishMessage actualyl published the message
+        // TODO: validate that publishMessage actually published the message
         messagePublisher.publishMessage(counterTopicName, req);
         // do we want to return something here?
     }

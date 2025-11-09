@@ -3,6 +3,8 @@ package com.yern.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import com.yern.model.common.AuditTimestamp;
 import com.yern.model.user.User;
 
 import java.time.LocalDateTime;
@@ -20,8 +22,10 @@ public class UserTests {
                 "Peter",
                 "Connelly",
                 "pconnelly898@gmail.com",
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                new AuditTimestamp(
+                    LocalDateTime.now(),
+                    LocalDateTime.now()
+                )
         );
 
         user.setId(123L);
