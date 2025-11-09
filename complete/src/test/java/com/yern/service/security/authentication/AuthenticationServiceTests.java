@@ -1,6 +1,6 @@
 package com.yern.service.security.authentication;
 
-import com.yern.dto.authentication.LoginResponse;
+import com.yern.dto.security.authentication.LoginResponse;
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
 import com.yern.mapper.UserMapper;
@@ -10,14 +10,9 @@ import com.yern.repository.user.UserAuthenticationRepository;
 import com.yern.service.security.oauth.providers.Oauth2Service;
 import com.yern.service.security.oauth.providers.Oauth2ServiceFactory;
 import com.yern.service.user.UserService;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;

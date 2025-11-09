@@ -1,0 +1,1 @@
+select set_all_audit_timestamp_triggers('yern');

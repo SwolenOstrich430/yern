@@ -1,6 +1,6 @@
 package com.yern.config;
 
-import com.yern.dto.authentication.UserDetailsImpl;
+import com.yern.dto.security.authentication.UserDetailsImpl;
 import com.yern.service.security.authentication.JwtService;
 import com.yern.service.security.authentication.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
@@ -30,6 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -157,7 +158,7 @@ public class JwtFilterTests {
 
         JwtFilter spyJwtFilter = Mockito.spy(jwtFilter);
 
-        UserDetailsImpl userDetails = new UserDetailsImpl("testUser", "");
+        UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
 
         doReturn(Optional.of(userDetails)).when(spyJwtFilter).extractUserDetails(anyString());
 
@@ -189,7 +190,7 @@ public class JwtFilterTests {
 
         JwtFilter spyJwtFilter = Mockito.spy(jwtFilter);
 
-        UserDetailsImpl userDetails = new UserDetailsImpl("testUser", "");
+        UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
 
         doReturn(Optional.of(userDetails)).when(spyJwtFilter).extractUserDetails(anyString());
 
@@ -222,7 +223,7 @@ public class JwtFilterTests {
         WebAuthenticationDetails mockDetails = mock(WebAuthenticationDetails.class);
 
         JwtFilter spyJwtFilter = Mockito.spy(jwtFilter);
-        UserDetailsImpl userDetails = new UserDetailsImpl("testUser", "");
+        UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
 
         doReturn(mockDetails).when(spyJwtFilter).getWebAuthenticationDetails(mockRequest);
         doReturn(mockToken).when(spyJwtFilter).getAuthentication(userDetails);
@@ -272,7 +273,7 @@ public class JwtFilterTests {
     public void extractUserDetails_shouldReturnAnOptionalOfUserDetails_whenAValidUsernameIsFound() throws IOException, ServletException {
         when(jwtService.extractUsername(validToken)).thenReturn(validToken);
         SecurityContext mockContext = Mockito.mock(SecurityContext.class);
-        UserDetailsImpl userDetails = new UserDetailsImpl("testUser", "");
+        UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
 
         try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
             mockedStatic.when(SecurityContextHolder::getContext).thenReturn(mockContext);

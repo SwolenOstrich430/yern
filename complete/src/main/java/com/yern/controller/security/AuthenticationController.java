@@ -1,7 +1,7 @@
 package com.yern.controller.security;
 
-import com.yern.dto.authentication.LoginRequest;
-import com.yern.dto.authentication.LoginResponse;
+import com.yern.dto.security.authentication.LoginRequest;
+import com.yern.dto.security.authentication.LoginResponse;
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
 import com.yern.service.security.authentication.AuthenticationService;

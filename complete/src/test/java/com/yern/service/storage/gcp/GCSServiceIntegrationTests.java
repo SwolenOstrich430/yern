@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.google.cloud.storage.Storage;
+import com.yern.dto.storage.BucketImpl;
 import com.yern.restservice.RestServiceApplication;
-import com.yern.service.storage.BucketImpl;
+import com.yern.service.storage.cloud.gcp.GCSService;
 
 @SpringBootTest(classes=RestServiceApplication.class)
 @TestMethodOrder(OrderAnnotation.class)
@@ -31,13 +36,16 @@ public class GCSServiceIntegrationTests {
     private String bucketName;
     private String fileName;
 
+    @Value("${storage.gcs.authenticated-url-prefix}")
+    private String authenticatedUrlPrefix;
+
     @BeforeEach
-    public void setup() {
+    public void setup() throws MalformedURLException, URISyntaxException {
         assertNotNull(client);
         assert(client instanceof Storage);
 
         if(service == null) {
-            service = new GCSService(client);
+            service = new GCSService(client, authenticatedUrlPrefix);
         }
 
         if (crudBuckets == null) {
@@ -48,8 +56,8 @@ public class GCSServiceIntegrationTests {
         bucketName = UUID.randomUUID().toString();
         crudBuckets.add(bucketName);
 
-        for(BucketImpl existingBucket : service.listBuckets()) {
-            service.deleteBucket(existingBucket.getName());
+        for(String existingBucket : crudBuckets) {
+            service.deleteBucket(existingBucket);
         }
 
         fileName = UUID.randomUUID().toString();
@@ -73,10 +81,17 @@ public class GCSServiceIntegrationTests {
             assertTrue(service.bucketExists(bucket));
         }
 
-        List<BucketImpl> foundBuckets = service.listBuckets();
-        assertEquals(foundBuckets.size(), crudBuckets.size());
+        List<BucketImpl> filteredBuckets = 
+                                service.listBuckets()
+                                    .stream()
+                                    .filter(currBucket -> crudBuckets.contains(
+                                        currBucket.getName())
+                                    )
+                                    .collect(Collectors.toList());
 
-        for(BucketImpl foundBucket : foundBuckets) {
+        assertEquals(filteredBuckets.size(), crudBuckets.size());
+
+        for(BucketImpl foundBucket : filteredBuckets) {
             assertTrue(crudBuckets.contains(foundBucket.getName()));
             BucketImpl matchingBucket = service.getBucket(foundBucket.getName());
             assertEquals(matchingBucket, foundBucket);

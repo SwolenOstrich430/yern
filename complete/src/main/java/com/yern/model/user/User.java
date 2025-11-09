@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.cglib.core.Local;
+
+import com.yern.model.common.AuditTimestamp;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,8 +21,7 @@ import lombok.Setter;
 public class User {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
-    @SequenceGenerator(name = "users_seq", sequenceName = "users_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Basic
@@ -32,26 +36,20 @@ public class User {
     @Column
     private String email;
 
-    @Basic
-    @Column(name="created_at")
-    private LocalDateTime createdAt;
-
-    @Basic
-    @Column(name="updated_at")
-    private LocalDateTime updatedAt;
+	@Basic 
+	@Column(name = "audit_timestamps") 
+    private AuditTimestamp auditTimestamps;
 
 	public User(
 		String firstName, 
 		String lastName,
 		String email,
-		LocalDateTime createdAt,
-		LocalDateTime updatedAt
+		AuditTimestamp auditTimestamps
 	) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
+		this.auditTimestamps = auditTimestamps;
 	}
 
     public User(
@@ -62,14 +60,25 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.auditTimestamps = new AuditTimestamp();
+		this.auditTimestamps.setCreatedAt(LocalDateTime.now());
+		this.auditTimestamps.setCreatedAt(
+			this.auditTimestamps.getCreatedAt()
+		);
     }
 
     public User() {}
 
 	public void setUpdatedAt(Optional<LocalDateTime> updatedAt) {
-		this.updatedAt = updatedAt.orElse(LocalDateTime.now() );
+		this.auditTimestamps.setUpdatedAt(updatedAt.orElse(LocalDateTime.now()));
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return getAuditTimestamps().getCreatedAt();
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return getAuditTimestamps().getUpdatedAt();
 	}
 
 	@Override

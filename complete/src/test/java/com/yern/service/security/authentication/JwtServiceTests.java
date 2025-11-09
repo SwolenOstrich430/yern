@@ -1,11 +1,9 @@
 package com.yern.service.security.authentication;
 
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.AuthenticationException;
@@ -13,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -40,8 +37,6 @@ public class JwtServiceTests {
     private final String email = "blah@google.com";
     private String mockToken;
     private final UserDetails userDetails = mock(UserDetails.class);
-    @Autowired
-    private ServletRequest httpServletRequest;
 
     @BeforeEach
     public void setup() {

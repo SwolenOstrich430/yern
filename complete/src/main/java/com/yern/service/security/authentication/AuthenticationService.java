@@ -1,6 +1,6 @@
 package com.yern.service.security.authentication;
 
-import com.yern.dto.authentication.LoginResponse;
+import com.yern.dto.security.authentication.LoginResponse;
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
 import com.yern.mapper.UserMapper;

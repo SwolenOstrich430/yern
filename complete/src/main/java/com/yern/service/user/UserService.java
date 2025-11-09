@@ -2,8 +2,12 @@ package com.yern.service.user;
 
 import com.yern.dto.user.UserPostDto;
 import com.yern.exceptions.DuplicateException;
+import com.yern.exceptions.NotFoundException;
 import com.yern.model.user.User;
 import com.yern.repository.user.UserRepository;
+
+import io.jsonwebtoken.lang.Assert;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +43,19 @@ public class UserService {
                 "User with the email address '%s' already exists.",
                 user.getEmail())
             );
+        }
+    } 
+
+    // TODO: add unit tests
+    public void validateUser(Long id) throws NotFoundException {        
+        String message = "User " + id + " is not valid";
+        if (id == null) {
+            throw new NotFoundException(message);
+        }
+
+        User foundUser = getUserById(id);
+        if (foundUser == null) {
+            throw new NotFoundException(message);
         }
     }
 }

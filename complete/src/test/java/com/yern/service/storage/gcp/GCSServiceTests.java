@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -16,16 +18,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
-import com.yern.service.storage.BucketImpl;
-
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.BlobInfo.Builder;
+import com.yern.dto.storage.BucketImpl;
+import com.yern.service.storage.cloud.gcp.GCSService;
 import com.google.cloud.storage.Bucket;
 
 public class GCSServiceTests {
@@ -35,6 +38,8 @@ public class GCSServiceTests {
     private Bucket bucket;
     private BucketImpl bucketImpl;
     private BlobId blobId;
+    @Value("${storage.gcs.authenticated-url-prefix}")
+    private String authenticatedUrlPrefix;
 
     private final String bucketName = UUID.randomUUID().toString();
     private final String fileName = UUID.randomUUID().toString();
@@ -43,10 +48,10 @@ public class GCSServiceTests {
     private final Path localPath = Mockito.mock(Path.class);
 
     @BeforeEach 
-    public void setup() {
+    public void setup() throws MalformedURLException, URISyntaxException {
         Paths.get("");
         this.client = Mockito.mock(Storage.class);
-        this.gcs = new GCSService(this.client);
+        this.gcs = new GCSService(this.client, authenticatedUrlPrefix);
         this.spy = Mockito.spy(this.gcs);
         this.bucket = Mockito.mock(Bucket.class);
         this.bucketImpl = Mockito.mock(BucketImpl.class);
@@ -164,6 +169,9 @@ public class GCSServiceTests {
     @Test 
     public void uploadFile_createsAFileInGCS_basedOnFileAtLocalPath() throws IOException {
         doReturn(blobId).when(spy).getBlobIdFromPath(fullPath);
+        when(blobId.getBucket()).thenReturn(bucketName);
+        doReturn(true).when(spy).bucketExists(bucketName);
+
         Builder builder = mock(Builder.class);
         BlobInfo blobInfo = mock(BlobInfo.class);
 
@@ -173,7 +181,7 @@ public class GCSServiceTests {
             ).thenReturn(builder);
             when(builder.build()).thenReturn(blobInfo);
             
-            this.spy.uploadFile(localPath, fullPath);
+            spy.uploadFile(localPath, fullPath);
 
             verify(
                 client, 

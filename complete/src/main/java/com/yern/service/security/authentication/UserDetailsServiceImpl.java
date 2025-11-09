@@ -1,13 +1,18 @@
 package com.yern.service.security.authentication;
 
-import com.yern.exceptions.NotFoundException;
+import com.yern.dto.security.authentication.UserDetailsImpl;
 import com.yern.model.user.User;
 import com.yern.model.user.UserAuthentication;
 import com.yern.repository.user.UserAuthenticationRepository;
 import com.yern.repository.user.UserRepository;
+
+import java.util.Collections;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,20 +33,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        User user = userRepository.getUserByEmail(email);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByEmail(email);
 
-        if(user == null) {
-            throw new NotFoundException(
-                String.format("User does not exist, email: %s", email)
-            );
-        }
+        user.orElseThrow(() -> new UsernameNotFoundException(
+            String.format("User does not exist, email: %s", email)
+        ));
 
-        UserAuthentication userAuth = userAuthRepository.getByUserId(user.getId());
+        User foundUser = user.get();
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(userAuth.getPassword())
-                .build();
+        UserAuthentication userAuth = userAuthRepository.getByUserId(foundUser.getId());
+
+        return new UserDetailsImpl(
+            foundUser.getEmail(),
+            userAuth.getPassword(),
+            Collections.emptyList(),
+            foundUser.getId()
+        ); 
     }
 }

@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// TODO: fix this -- terrible
 public class LocalDateTimeDeserializer implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
 
     public JsonElement serialize(LocalDateTime date, Type typeOfSrc, JsonSerializationContext context) {
@@ -28,7 +29,14 @@ public class LocalDateTimeDeserializer implements JsonSerializer<LocalDateTime>,
                     jsonArray.get(6).getAsInt()
             );
         } else if(jsonElement.isJsonPrimitive()) {
-            localDateTime = LocalDateTime.parse(jsonElement.getAsString());
+            try {
+                localDateTime = LocalDateTime.parse(jsonElement.getAsString());
+            } catch(Exception e) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                localDateTime = LocalDateTime.parse(
+                    jsonElement.getAsString(), formatter
+                );
+            }
         } else {
             throw new JsonParseException(jsonElement.toString());
         }
